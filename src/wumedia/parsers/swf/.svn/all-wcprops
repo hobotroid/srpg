@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/!svn/ver/22/trunk/src/wumedia/parsers/swf
+END
+Color.as
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/22/trunk/src/wumedia/parsers/swf/Color.as
+END
+ShapeRecord.as
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/22/trunk/src/wumedia/parsers/swf/ShapeRecord.as
+END
+TagTypes.as
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/22/trunk/src/wumedia/parsers/swf/TagTypes.as
+END
+DefineFont.as
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/22/trunk/src/wumedia/parsers/swf/DefineFont.as
+END
+Edge.as
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/22/trunk/src/wumedia/parsers/swf/Edge.as
+END
+FillStyle.as
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/22/trunk/src/wumedia/parsers/swf/FillStyle.as
+END
+LineStyle.as
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/22/trunk/src/wumedia/parsers/swf/LineStyle.as
+END
+Data.as
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/22/trunk/src/wumedia/parsers/swf/Data.as
+END
+DefineShape.as
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/22/trunk/src/wumedia/parsers/swf/DefineShape.as
+END
+Tag.as
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/22/trunk/src/wumedia/parsers/swf/Tag.as
+END
+SWFParser.as
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/22/trunk/src/wumedia/parsers/swf/SWFParser.as
+END
+KerningRecord.as
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/22/trunk/src/wumedia/parsers/swf/KerningRecord.as
+END

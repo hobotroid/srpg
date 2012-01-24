@@ -1,0 +1,72 @@
+package ui
+{
+   import flash.display.MovieClip;
+   import flash.display.Sprite;
+   import flash.text.TextField;
+   
+   import com.greensock.*;
+   import com.greensock.easing.*;
+   
+   public class UIBar extends MovieClip
+   {
+      private static const WIDTH:int = 200;
+      private static const HEIGHT:int = 10;
+      private static const LINE_WIDTH:int = 1;
+      
+      private var color:int = 0xFF0000;
+      private var max:int;
+      private var value:int;
+      
+      private var bar:Sprite;
+      private var text:TextField;
+      
+      public function UIBar(color:int, max:int) 
+      {
+         this.max = max;
+         this.color = color;
+         
+         bar = new Sprite();
+         bar.graphics.beginFill(color);
+         bar.graphics.lineStyle(LINE_WIDTH, color);
+         bar.graphics.drawRoundRect(0, 0, WIDTH, HEIGHT, 8);
+         bar.graphics.endFill();
+         addChild(bar);
+         
+         text = Global.makeText("");
+         addChild(text);
+         
+         setValue(max);
+      }
+      
+      private function reset():void
+      {
+         graphics.clear();
+         
+         //shadow
+         graphics.beginFill(0x000000);
+         graphics.lineStyle(LINE_WIDTH, 0x000000);
+         graphics.drawRoundRect( -LINE_WIDTH, LINE_WIDTH, WIDTH - LINE_WIDTH, HEIGHT + LINE_WIDTH, 8);
+         graphics.endFill();
+         
+         //white background
+         graphics.beginFill(0xffffff);
+         graphics.lineStyle(LINE_WIDTH, 0xffffff);
+         graphics.drawRoundRect(0, 0, WIDTH, HEIGHT, 8);
+         graphics.endFill();
+      }
+      
+      public function setValue(value:int):void
+      {
+         reset();
+         
+         if (this.value != value) {
+            text.text = String(value) + ' / ' + String(max);
+            text.x = WIDTH / 2 - text.width / 2;
+            text.y = HEIGHT / 2 - text.height / 2;
+            this.value = value;
+            TweenMax.to(bar, .5, { scaleX: value/max } );
+         }
+      }
+   }
+
+}

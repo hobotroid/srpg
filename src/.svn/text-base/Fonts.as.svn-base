@@ -1,0 +1,41 @@
+﻿package
+{
+   import flash.text.Font;
+   import flash.text.TextFormat;
+ 
+   /**
+    *  This class sets up the fonts for the application.
+    */
+   public class Fonts
+   {
+   // Embed a TTF file
+        [Embed(source="../pixChicago.ttf", fontName="Press Start", mimeType="application/x-font", advancedAntiAliasing="false")]
+        private static var PressStartK:Class;
+ 
+      /**
+       * Constuctor
+       */
+      public function Fonts()
+      {
+         // Register the font with the global Font manager class
+         Font.registerFont(PressStartK);
+      }
+ 
+      /**
+       * A utility function
+       *
+       * @param font   A font object
+       * @return    A sting of the font name combined with the font style
+       */
+      public static function getUniqueFontName(font:Font):String
+      {
+         return font.fontName + ":" + font.fontStyle;
+      }
+      // A convienent place to declare TextFormat objects that will be used in multiple location
+      public static var textFormatMain:TextFormat = new TextFormat(
+         "Press Start",
+         8,
+         0xffffff, false, false, false, null, null, null, 0, 0, null, 0);
+ 
+   }
+}

@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/2/trunk/com/probertson/utils
+END
+CRC32Generator.as
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/2/trunk/com/probertson/utils/CRC32Generator.as
+END
+GZIPEncoder.as
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/2/trunk/com/probertson/utils/GZIPEncoder.as
+END
+GZIPFile.as
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/2/trunk/com/probertson/utils/GZIPFile.as
+END

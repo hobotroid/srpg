@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE preferences SYSTEM "http://java.sun.com/dtd/preferences.dtd">
+<preferences EXTERNAL_XML_VERSION="1.0">
+  <root type="user">
+    <map/>
+    <node name="tiled">
+      <map>
+        <entry key="undoDepth" value="30"/>
+      </map>
+      <node name="dialog">
+        <map/>
+        <node name="main">
+          <map>
+            <entry key="state" value="0"/>
+            <entry key="width" value="1285"/>
+            <entry key="height" value="1062"/>
+          </map>
+        </node>
+        <node name="newmap">
+          <map>
+            <entry key="mapWidth" value="50"/>
+            <entry key="mapHeight" value="50"/>
+            <entry key="tileWidth" value="48"/>
+            <entry key="tileHeight" value="48"/>
+          </map>
+        </node>
+        <node name="tilepalette">
+          <map>
+            <entry key="width" value="300"/>
+            <entry key="height" value="200"/>
+            <entry key="divider" value="-1"/>
+          </map>
+        </node>
+      </node>
+      <node name="display">
+        <map>
+          <entry key="gridAntialias" value="false"/>
+        </map>
+      </node>
+      <node name="dock">
+        <map/>
+        <node name="layers">
+          <map>
+            <entry key="floating" value="false"/>
+            <entry key="dividerLocation" value="961"/>
+          </map>
+        </node>
+        <node name="tilesets">
+          <map>
+            <entry key="floating" value="false"/>
+            <entry key="dividerLocation" value="698"/>
+          </map>
+        </node>
+      </node>
+      <node name="io">
+        <map/>
+      </node>
+      <node name="recent">
+        <map>
+          <entry key="file0" value="C:\dev\test\maps\map.tmx"/>
+          <entry key="file1" value="C:\dev\test\maps\test.tmx"/>
+          <entry key="file2" value="C:\dev\test\map.tmx"/>
+        </map>
+      </node>
+      <node name="saving">
+        <map>
+          <entry key="embedImages" value="false"/>
+          <entry key="encodeLayerData" value="false"/>
+          <entry key="layerCompression" value="false"/>
+          <entry key="tileSetImages" value="false"/>
+        </map>
+      </node>
+    </node>
+  </root>
+</preferences>

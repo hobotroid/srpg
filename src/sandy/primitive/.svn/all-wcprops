@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/59/trunk/src/sandy/primitive
+END
+PrimitiveMode.as
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/59/trunk/src/sandy/primitive/PrimitiveMode.as
+END
+Line3D.as
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/59/trunk/src/sandy/primitive/Line3D.as
+END
+Primitive3D.as
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/59/trunk/src/sandy/primitive/Primitive3D.as
+END
+SkyBox.as
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/59/trunk/src/sandy/primitive/SkyBox.as
+END
+MD2.as
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/59/trunk/src/sandy/primitive/MD2.as
+END
+Hedra.as
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/59/trunk/src/sandy/primitive/Hedra.as
+END
+Cone.as
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/59/trunk/src/sandy/primitive/Cone.as
+END
+Plane3D.as
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/59/trunk/src/sandy/primitive/Plane3D.as
+END
+Sphere.as
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/59/trunk/src/sandy/primitive/Sphere.as
+END
+Box.as
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/59/trunk/src/sandy/primitive/Box.as
+END
+Cylinder.as
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/59/trunk/src/sandy/primitive/Cylinder.as
+END
+GeodesicSphere.as
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/59/trunk/src/sandy/primitive/GeodesicSphere.as
+END
+Torus.as
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/59/trunk/src/sandy/primitive/Torus.as
+END

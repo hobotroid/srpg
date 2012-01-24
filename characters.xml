@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<characters>
+   <!-- party members -->
+   <character id="carl">
+      <full_name>Carl</full_name>
+      <portrait index="774" width="150" height="150" />
+      <width>48</width>
+      <height>48</height>
+      <type>primary</type>
+      <hp>100</hp>
+      <dex>40</dex>
+      <str>8</str>
+      <mp>10</mp>
+      <speed>3</speed>
+	  <head_y>23</head_y>
+      <frames>
+         <frame index="42" label="downstill" default="downstill" />
+         <frame index="40" label="downwalk" default="downstill" />
+         <frame index="42" label="downwalk" default="downstill" />
+         <frame index="41" label="downwalk" default="downstill" />
+         <frame index="42" label="downwalk" default="downstill" />
+         <frame index="45" label="upstill" default="upstill" />
+         <frame index="43" label="upwalk" default="upstill" />
+         <frame index="45" label="upwalk" default="upstill" />
+         <frame index="44" label="upwalk" default="upstill" />
+         <frame index="45" label="upwalk" default="upstill" />
+         <frame index="37" label="rightstill" default="rightstill" />
+         <frame index="38" label="rightwalk" default="rightstill" />
+         <frame index="37" label="rightwalk" default="rightstill" />
+         <frame index="39" label="rightwalk" default="rightstill" />
+         <frame index="37" label="rightwalk" default="rightstill" />
+         <frame index="34" label="leftstill" default="leftstill" />
+         <frame index="35" label="leftwalk" default="leftstill" />                    
+         <frame index="34" label="leftwalk" default="leftstill" />
+         <frame index="36" label="leftwalk" default="leftstill" />
+         <frame index="34" label="leftwalk" default="leftstill" />
+         <frame index="34" label="combat" default="combat" />
+         <frame index="85" label="dead" default="dead" />
+      </frames>
+      <spells>
+         <spell name="Millions and Millions!" />
+         <spell name="Full Heal" />
+      </spells>
+      <collision>
+         <x>15</x>
+         <y>45</y>
+         <width>16</width>
+         <height>3</height>
+      </collision>
+   </character>
+   <character id="phillip lasko">
+      <full_name>Phillip Lasko</full_name>
+      <portrait index="778" width="150" height="150" />
+      <type>primary</type>
+	  <width>48</width>
+      <height>48</height>
+      <hp>100</hp>
+      <dex>40</dex>
+      <str>8</str>
+      <mp>10</mp>
+      <speed>5</speed>
+	  <head_y>19</head_y>
+      <frames>
+         <frame index="282" label="downstill" default="downstill" />
+         <frame index="280" label="downwalk" default="downstill" />
+         <frame index="281" label="downwalk" default="downstill" />
+         <frame index="282" label="downwalk" default="downstill" />
+         <frame index="277" label="upstill" default="upstill" />
+         <frame index="278" label="upwalk" default="upstill" />
+         <frame index="279" label="upwalk" default="upstill" />
+         <frame index="277" label="upwalk" default="upstill" />
+         <frame index="285" label="rightstill" default="rightstill" />
+         <frame index="283" label="rightwalk" default="rightstill" />
+         <frame index="284" label="rightwalk" default="rightstill" />
+         <frame index="285" label="rightwalk" default="rightstill" />
+         <frame index="274" label="leftstill" default="leftstill" />
+         <frame index="275" label="leftwalk" default="leftstill" />
+         <frame index="276" label="leftwalk" default="leftstill" />
+         <frame index="274" label="leftwalk" default="leftstill" />
+         <frame index="272" label="combat" default="combat" />
+         <frame index="85" label="dead" default="dead" />
+      </frames>
+      <spells>
+         <spell name="Millions and Millions!" />
+         <spell name="Full Heal" />
+      </spells>
+   </character>
+   
+   <!-- townspeople -->
+   <character id="townsman">
+      <full_name>Townsman</full_name>
+      <type>townsman</type>
+      <hp>100</hp>
+      <dex>40</dex>
+      <str>8</str>
+      <mp>10</mp>
+      <speed>1</speed>
+      <frames>
+         <frame index="376" label="downstill" default="downstill" />
+         <frame index="374" label="downwalk" default="downstill" />
+         <frame index="375" label="downwalk" default="downstill" />
+         <frame index="376" label="downwalk" default="downstill" />
+         <frame index="379" label="upstill" default="upstill" />
+         <frame index="377" label="upwalk" default="upstill" />
+         <frame index="378" label="upwalk" default="upstill" />
+         <frame index="379" label="upwalk" default="upstill" />
+         <frame index="384" label="rightstill" default="rightstill" />
+         <frame index="380" label="rightwalk" default="rightstill" />
+         <frame index="383" label="rightwalk" default="rightstill" />
+         <frame index="384" label="rightwalk" default="rightstill" />
+         <frame index="385" label="leftstill" default="leftstill" />
+         <frame index="381" label="leftwalk" default="leftstill" />
+         <frame index="382" label="leftwalk" default="leftstill" />
+         <frame index="385" label="leftwalk" default="leftstill" />
+         
+         <frame index="387" label="leftblink" replace="leftstill" speed="2" />
+         <frame index="388" label="rightblink" replace="rightstill" speed="2" />
+         <frame index="386" label="downblink" replace="downstill" speed="2" />
+         
+         <frame index="376" label="standard" default="downstill" />
+         <frame index="384" label="combat" default="combat" />
+         <frame index="384" label="dead" default="dead" />
+      </frames>
+      <collision>
+         <x>17</x>
+         <y>35</y>
+         <width>17</width>
+         <height>13</height>
+      </collision>
+      <dialog>
+         <prompt type="initial" id="1" choiceIds="1,2">I intend to murder you.</prompt>
+         <choice type="initial" id="1" action="prompt" promptId="2">Don't.</choice>
+         <choice type="initial" id="2" action="prompt" promptId="3">Let's do this.</choice>
+         <prompt type="normal" id="2" action="end">Alright.</prompt>
+         <prompt type="normal" id="3" action="encounter">Agreed.</prompt>
+      </dialog>
+   </character>
+   
+   <!-- misc -->
+   <character id="phillip lasko">
+       <type>primary</type>
+   </character>
+   <character id="dad cat">
+       <type>primary</type>
+   </character>
+   
+   <!-- random encounter characters -->
+   <character id="chickitten">
+      <full_name>Chickitten</full_name>
+      <level>1</level>
+      <type>random</type>
+      <width>96</width>
+      <height>96</height>
+      <hp>50</hp>
+      <dex>10</dex>
+      <str>11</str>
+      <mp>0</mp>
+      <frames>
+         <frame index="170" label="standard" default="standard" />
+         <frame index="85" label="dead" default="dead" />
+      </frames>
+   </character>
+   <character id="file ghost">
+      <full_name>File Ghost</full_name>
+      <level>7</level>
+      <type>random</type>
+      <width>96</width>
+      <height>96</height>
+      <hp>200</hp>
+      <dex>10</dex>
+      <str>11</str>
+      <mp>0</mp>
+      <spells>
+         <spell name="Full Heal" />
+      </spells>
+      <frames>
+         <frame index="172" label="standard" default="standard" />
+         <frame index="174" label="invulnerable" default="invulnerable" />
+         <frame index="172" label="combat" default="combat" />
+         <frame index="85" label="dead" default="dead" />
+      </frames>
+      <conditions>
+         <condition type="hp" value="20%" comparison="lte">
+            <action type="change_state" value="invulnerable" duration="2" />
+            <action type="change_frame" value="invulnerable" duration="2" />
+            <action type="cast_spell" value="Full Heal" />
+         </condition>
+      </conditions>
+   </character>
+   <character id="tvrtle">
+      <full_name>TVrtle</full_name>
+      <level>1</level>
+      <type>random</type>
+      <width>144</width>
+      <height>96</height>
+      <hp>50</hp>
+      <dex>10</dex>
+      <str>11</str>
+      <mp>0</mp>
+      <frames>
+         <frame index="176" label="standard" default="standard" />
+         <frame index="176" label="combat" default="combat" />
+         <frame index="176" label="dead" default="dead" />
+      </frames>
+   </character>
+   <character id="dogs">
+      <full_name>Weener Weeners</full_name>
+      <level>2</level>
+      <type>random</type>
+      <width>96</width>
+      <height>96</height>
+      <hp>50</hp>
+      <dex>10</dex>
+      <str>11</str>
+      <mp>0</mp>
+      <frames>
+         <frame index="212" label="standard" default="standard" />
+         <frame index="212" label="combat" default="combat" />
+         <frame index="212" label="dead" default="dead" />
+      </frames>
+   </character>
+   
+   <!-- bosses -->
+   <character id="maymum">
+      <full_name>Maymum Bebek</full_name>
+      <level>10</level>
+      <type>boss</type>
+      <width>240</width>
+      <height>192</height>
+      <hp>5000</hp>
+      <dex>10</dex>
+      <str>11</str>
+      <mp>0</mp>
+      <frames>
+         <frame index="204" label="standard" default="standard" />
+         <frame index="204" label="combat" default="combat" />
+         <frame index="85" label="dead" default="dead" />
+      </frames>
+   </character>
+   
+   <!-- joshua the merchant -->
+   <character id="joshua">
+      <full_name>Joshua</full_name>
+      <type>joshua</type>
+       <dialog>
+         <prompt type="initial" id="1" choiceIds="1,2">
+            <random>I'm so proud of my stock. Here, take a look.</random>
+            <random>I am simply positive I have something that you'll be interested in!</random>
+            <random>In terms of customers, you are one of many. But in terms of customer service, you are one of one. Does that make sense?</random>
+         </prompt>
+         <choice type="initial" id="1" action="prompt" promptId="2">Give it to me.</choice>
+         <choice type="initial" id="2" action="prompt" promptId="3">That price is too high.</choice>
+         <prompt type="normal" id="2" action="loot">Cruel. Very cruel of you.</prompt>
+         <prompt type="normal" id="3" action="end">Thank you.</prompt>
+      </dialog>
+      <frames>
+         <frame index="243" label="standard" default="standard" />
+         <frame index="244" label="talking" default="talking" />
+      </frames>
+      <collision>
+         <x>17</x>
+         <y>35</y>
+         <width>17</width>
+         <height>13</height>
+      </collision>
+   </character>
+
+   <!-- misc -->
+   <character id="boxman">
+      <full_name>Box Man</full_name>
+      <type>boxman</type>
+      <dialog>
+         <prompt type="initial" id="1" choiceIds="1,2">I may have something for you, but its retrieval would mean the end of my life.</prompt>
+         <choice type="initial" id="1" action="prompt" promptId="2">Give it to me.</choice>
+         <choice type="initial" id="2" action="prompt" promptId="3">That price is too high.</choice>
+         <prompt type="normal" id="2" action="loot">Cruel. Very cruel of you.</prompt>
+         <prompt type="normal" id="3" action="end">Thank you.</prompt>
+      </dialog>
+      <collision>
+         <x>6</x>
+         <y>25</y>
+         <width>36</width>
+         <height>15</height>
+      </collision>
+   </character>
+   <character id="airplane_seat">
+      <collision>
+         <x>6</x>
+         <y>40</y>
+         <width>36</width>
+         <height>5</height>
+      </collision>
+   </character>
+   <character id="plane_seats2">
+      <collision>
+         <x>0</x>
+         <y>33</y>
+         <width>48</width>
+         <height>15</height>
+      </collision>
+   </character>
+   <character id="plane_seat">
+      <collision>
+         <x>0</x>
+         <y>33</y>
+         <width>24</width>
+         <height>15</height>
+      </collision>
+   </character>
+   <character id="plane_trolly">
+      <collision>
+         <x>0</x>
+         <y>38</y>
+         <width>14</width>
+         <height>11</height>
+      </collision>
+   </character>
+</characters>

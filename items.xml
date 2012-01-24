@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<items>
+   <item name="Rare Shoes" id="1">
+      <icons>
+         <small>29</small>
+         <big>29</big>
+      </icons>
+   </item>
+   <item name="Standard Sword" id="2">
+      <icons>
+         <small>29</small>
+         <big>29</big>
+      </icons>
+   </item>
+   <item name="Nunchucks" id="3">
+      <icons></icons>
+      <frames>
+         <frame index="341" label="swing" origin_x="30" origin_y="85" width="96" height="96" offset_x="map.tileWidth/4" offset_y="map.tileHeight/2" hide="false" />
+         <frame index="343" label="swing" origin_x="30" origin_y="85" width="96" height="96" offset_x="map.tileWidth/4" offset_y="map.tileHeight/2" hide="false" />
+         <frame index="345" label="swing" origin_x="30" origin_y="85" width="96" height="96" offset_x="map.tileWidth/4" offset_y="map.tileHeight/2" hide="false" />
+      </frames>
+   </item>
+   <item name="Pistol" id="4">
+      <frames>
+         <frame index="273" label="shoot" origin_x="0" origin_y="0" width="48" height="48" offset_x="0" offset_y="0" hide="true" />
+      </frames>
+   </item>
+</items>

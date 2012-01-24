@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/!svn/ver/59/trunk/src/sandy/core
+END
+SceneLocator.as
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/59/trunk/src/sandy/core/SceneLocator.as
+END
+Scene3D.as
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/59/trunk/src/sandy/core/Scene3D.as
+END
+Renderer.as
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/59/trunk/src/sandy/core/Renderer.as
+END
+SandyFlags.as
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/59/trunk/src/sandy/core/SandyFlags.as
+END

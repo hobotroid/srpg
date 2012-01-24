@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/!svn/ver/59/trunk/src/sandy/math
+END
+QuaternionMath.as
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/59/trunk/src/sandy/math/QuaternionMath.as
+END
+IntersectionMath.as
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/59/trunk/src/sandy/math/IntersectionMath.as
+END
+Matrix4Math.as
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/59/trunk/src/sandy/math/Matrix4Math.as
+END
+FastMath.as
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/59/trunk/src/sandy/math/FastMath.as
+END
+VertexMath.as
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/59/trunk/src/sandy/math/VertexMath.as
+END
+ColorMath.as
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/59/trunk/src/sandy/math/ColorMath.as
+END
+PlaneMath.as
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/59/trunk/src/sandy/math/PlaneMath.as
+END
+Point3DMath.as
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/59/trunk/src/sandy/math/Point3DMath.as
+END

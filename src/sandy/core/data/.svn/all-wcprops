@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/59/trunk/src/sandy/core/data
+END
+BezierPath.as
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/59/trunk/src/sandy/core/data/BezierPath.as
+END
+Vertex.as
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/59/trunk/src/sandy/core/data/Vertex.as
+END
+Plane.as
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/59/trunk/src/sandy/core/data/Plane.as
+END
+Point3D.as
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/59/trunk/src/sandy/core/data/Point3D.as
+END
+UVCoord.as
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/59/trunk/src/sandy/core/data/UVCoord.as
+END
+Quaternion.as
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/59/trunk/src/sandy/core/data/Quaternion.as
+END
+Polygon.as
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/59/trunk/src/sandy/core/data/Polygon.as
+END
+PrimitiveFace.as
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/59/trunk/src/sandy/core/data/PrimitiveFace.as
+END
+Matrix4.as
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/59/trunk/src/sandy/core/data/Matrix4.as
+END
+Pool.as
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/!svn/ver/59/trunk/src/sandy/core/data/Pool.as
+END
+BSPNode.as
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/59/trunk/src/sandy/core/data/BSPNode.as
+END
+Edge3D.as
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/59/trunk/src/sandy/core/data/Edge3D.as
+END

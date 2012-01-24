@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/59/trunk/src/sandy/materials/attributes
+END
+GouraudAttributes.as
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/59/trunk/src/sandy/materials/attributes/GouraudAttributes.as
+END
+VertexNormalAttributes.as
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/!svn/ver/59/trunk/src/sandy/materials/attributes/VertexNormalAttributes.as
+END
+LightAttributes.as
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/59/trunk/src/sandy/materials/attributes/LightAttributes.as
+END
+LineAttributes.as
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/59/trunk/src/sandy/materials/attributes/LineAttributes.as
+END
+ALightAttributes.as
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/59/trunk/src/sandy/materials/attributes/ALightAttributes.as
+END
+CelShadeAttributes.as
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/!svn/ver/59/trunk/src/sandy/materials/attributes/CelShadeAttributes.as
+END
+IAttributes.as
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/59/trunk/src/sandy/materials/attributes/IAttributes.as
+END
+CylinderEnvMap.as
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/59/trunk/src/sandy/materials/attributes/CylinderEnvMap.as
+END
+PhongAttributes.as
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/59/trunk/src/sandy/materials/attributes/PhongAttributes.as
+END
+MaterialAttributes.as
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/!svn/ver/59/trunk/src/sandy/materials/attributes/MaterialAttributes.as
+END
+OutlineAttributes.as
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/59/trunk/src/sandy/materials/attributes/OutlineAttributes.as
+END
+AAttributes.as
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/59/trunk/src/sandy/materials/attributes/AAttributes.as
+END
+MediumAttributes.as
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/59/trunk/src/sandy/materials/attributes/MediumAttributes.as
+END
+PhongAttributesLightMap.as
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/59/trunk/src/sandy/materials/attributes/PhongAttributesLightMap.as
+END

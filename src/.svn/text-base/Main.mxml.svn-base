@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" initialize="onInit()" layout="absolute" width="640" height="480">
+<mx:Script>
+<![CDATA[
+   import Test;
+
+   private function onInit():void
+   {
+      var myMain:Test = new Test();
+      this.rawChildren.addChild(myMain);
+   }
+]]>
+</mx:Script>
+</mx:Application>
