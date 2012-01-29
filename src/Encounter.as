@@ -227,7 +227,7 @@ debugOut('added bitmap for ' + enemy.character.name + ' (y='+enemy.sprite.y+')')
 			clip.addChild(spBar);
  		 }
 		 menus.addMenuItem("bottom", clip, function():void { });
-		 
+		 Utils.addBorder(clip);
          addChild(menus);
       }
       

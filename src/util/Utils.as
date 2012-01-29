@@ -97,5 +97,13 @@
 			
 			return newBmd;
 		}
+		
+		public static function addBorder(myMC):void{
+			var mc:MovieClip = new MovieClip();
+			mc.graphics.lineStyle(2, 0x434B54);
+			mc.graphics.drawRect(0, 0, myMC.width, myMC.height);
+			mc.graphics.endFill();
+			myMC.addChild(mc);
+		}		
 	}
 }
