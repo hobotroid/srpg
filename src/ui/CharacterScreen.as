@@ -49,7 +49,7 @@
             charBox.addChild(hpBar);
             charBox.addChild(mpBar);
             
-            addMenuItem("characters", charBox, characterSelected, null, switchBox, "menu");
+            addMenuItem("characters", charBox, { callback: characterSelected, exitCallback: switchBox, exitCallbackParams: "menu"});
          }
          
          //menu options

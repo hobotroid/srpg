@@ -61,7 +61,7 @@
 			found = false;
 			for (x = bmd.width-1; x >= 0; x--) {
 				for (y = 0; y < bmd.height; y++) {
-					if (!found && bmd.getPixel(x, y)) { found = true; rect.width = x+1 - rect.x; }
+					if (!found && bmd.getPixel(x, y)) { found = true; rect.width = x+2 - rect.x; }
 				}
 			}
 			//top
@@ -98,12 +98,37 @@
 			return newBmd;
 		}
 		
-		public static function addBorder(myMC):void{
-			var mc:MovieClip = new MovieClip();
-			mc.graphics.lineStyle(2, 0x434B54);
-			mc.graphics.drawRect(0, 0, myMC.width, myMC.height);
-			mc.graphics.endFill();
-			myMC.addChild(mc);
+		public static function addBorder(obj:Object):void {
+			var c:Class = getClass(obj);
+			if(String(c) == "[class Bitmap]") {
+				//obj.bitmapData.fillRect(new Rectangle(0, 0, obj.width, obj.height), 0xFFFFFF00);
+				obj.bitmapData.fillRect(new Rectangle(0, 0, obj.width, 1), 0xFFFFFF00);
+				obj.bitmapData.fillRect(new Rectangle(0, obj.height-1, obj.width, obj.height), 0xFFFFFF00);
+				obj.bitmapData.fillRect(new Rectangle(0, 0, 1, obj.height), 0xFFFFFF00);
+				obj.bitmapData.fillRect(new Rectangle(obj.width-1, 0, obj.width, obj.height), 0xFFFFFF00);
+			} else {
+				var mc:MovieClip = new MovieClip();
+				mc.graphics.lineStyle(2, 0x434B54);
+				mc.graphics.drawRect(0, 0, obj.width, obj.height);
+				mc.graphics.endFill();
+				obj.addChild(mc);
+			}
 		}		
+		
+		public static function getClass(obj:Object):Class {
+			//return Class(getDefinitionByName(getQualifiedClassName(obj)));
+			return Object(obj).constructor;
+		}
+		
+		public static function mergeObjects( obj0:Object, obj1:Object ):Object {
+			var obj:Object = { };
+			for( var p:String in obj0 )
+			{
+				obj[ p ] = ( obj1[ p ] != null ) ? obj1[ p ] : obj0[ p ];
+				//trace(p + ": " + obj[p]);
+				//trace( p, ' : obj0', obj0[ p ], 'obj1', obj1[ p ], '-> new value = ', obj[ p ] );
+			}
+			return obj;
+		}
 	}
 }

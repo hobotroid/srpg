@@ -65,6 +65,7 @@
          //set up party array
          for each(var good:Character in goodies.characters) {
             good.setAnimState(Global.STATE_COMBAT);
+			good.setState(Global.STATE_COMBAT);0
             var object:Object = {};
             object.character = good;
             object.bitmap = new Bitmap(new BitmapData(good.width, good.height));
@@ -187,7 +188,7 @@ debugOut('added bitmap for ' + enemy.character.name + ' (y='+enemy.sprite.y+')')
             member.healthBar.y = 10;
             clip.addChild(member.healthBar);
             clip.addChild(Global.makeText(member.character.name));
-            menus.addMenuItem("party", clip, partySelected, member);
+            menus.addMenuItem("party", clip, {callback: partySelected, callbackParams: member});
          }
          for each(enemy in enemies) {
             clip = new MovieClip();
@@ -200,34 +201,46 @@ debugOut('added bitmap for ' + enemy.character.name + ' (y='+enemy.sprite.y+')')
          }
 		 
 		 //new bottom menu
-		 clip = new MovieClip();
-		 var count:int = 0, HEAD_WIDTH:int = 117, HEAD_HEIGHT:int = 114, BOTTOM_BAR_WIDTH:int = width - 20;
+		 var heads:MovieClip = new MovieClip();
+		 var count:int = 0, HEAD_WIDTH:int = 90, HEAD_HEIGHT:int = 90, BOTTOM_BAR_WIDTH:int = width - 20, BARS_HEIGHT:int = 25, HEAD_PADDING:int = 15;
 		 menus.addBox(10, height - 300, BOTTOM_BAR_WIDTH, 128, "bottom", "free", 0, 0xffffff);
 		 for each(good in goodies.characters) {
+			 trace(good.getState().type);
+			 
 			//faces
             var headBmp:Bitmap = new Bitmap(new BitmapData(good.width, good.height));
 			var currentFrame:int = good.getCurrentFrame();
 			headBmp.bitmapData.copyPixels(
 				Global.tileset48, new Rectangle((currentFrame % 17) * 48, (int(currentFrame / 17)) * 48, good.width, good.height), new Point(0, 0)
 			);
-			headBmp.bitmapData = Utils.crop(headBmp.bitmapData, new Rectangle(0, 0, headBmp.bitmapData.width, good.head_cutoff_y));
 			headBmp.bitmapData = Utils.autoCrop(headBmp.bitmapData);
-			headBmp.scaleX = headBmp.scaleY = 4.0;
-			headBmp.x = BOTTOM_BAR_WIDTH - HEAD_WIDTH * (count++ + 1); // 10 + width - 20 - HEAD_WIDTH * count++;
-			clip.addChild(headBmp);
+			headBmp.bitmapData = Utils.crop(headBmp.bitmapData, new Rectangle(0, 0, headBmp.bitmapData.width, good.head_cutoff_y));			
+			Utils.resizeMe(headBmp, HEAD_WIDTH, HEAD_HEIGHT);
+			headBmp.x = HEAD_PADDING * count + HEAD_WIDTH * count + HEAD_WIDTH / 2 - headBmp.width / 2 + 5;
+			headBmp.y = HEAD_HEIGHT / 2 - headBmp.height / 2;
+			heads.addChild(headBmp);
 			
 			//mp+sp bars
 			var hpBar:UIBar = new UIBar(Global.BAR_COLOR_HP, good.getMaxHP(), '');
 			var spBar:UIBar = new UIBar(Global.BAR_COLOR_SP, good.getMaxMP(), '');
 			hpBar.y = 90;
-			hpBar.x = headBmp.x + HEAD_WIDTH / 2 - hpBar.width + 9;
+			hpBar.x = HEAD_PADDING * count + count * HEAD_WIDTH + 9;
 			spBar.y = 100;
-			spBar.x = headBmp.x + HEAD_WIDTH / 2 - spBar.width;
-			clip.addChild(hpBar);
-			clip.addChild(spBar);
+			spBar.x = HEAD_PADDING * count + count * HEAD_WIDTH;
+			heads.addChild(hpBar);
+			heads.addChild(spBar);
+			
+			//debug boxes
+			/*var debugBox:Bitmap = new Bitmap(new BitmapData(HEAD_WIDTH, HEAD_HEIGHT, true, 0xFF0000FF));
+			debugBox.x = headBmp.x;
+			debugBox.y = headBmp.y;
+			trace(debugBox.x + ' x ' + debugBox.y + ' - ' + debugBox.width + ' x ' + debugBox.height);
+			heads.addChild(debugBox);*/
+			
+			count++;
  		 }
-		 menus.addMenuItem("bottom", clip, function():void { });
-		 Utils.addBorder(clip);
+		 menus.addMenuItem("bottom", heads, {x: BOTTOM_BAR_WIDTH - heads.width - 10, y: 0});
+		 //Utils.addBorder(heads);
          addChild(menus);
       }
       

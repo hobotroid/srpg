@@ -44,7 +44,7 @@
             itemText.name = "itemText";
             mc.addChild(slotText);
             mc.addChild(itemText);
-            addMenuItem("equip", mc, slotSelected, null, equipmentExit);
+            addMenuItem("equip", mc, {callback: slotSelected, exitCallback: equipmentExit});
          }
 
          switchBox("characters");

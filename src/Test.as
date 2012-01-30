@@ -262,7 +262,7 @@
 			party.addCharacter(carl);
             
 			party.addCharacter(phil);
-			//party.addCharacter(townsman);
+			party.addCharacter(townsman);
             
             maps[activeMap].npcs.push(party);
 		}
@@ -346,19 +346,19 @@
 		{
 			stopGameTimer();
 			gameState = "encounter";
-			var encounter:Encounter = new Encounter(party, npc);
+			/*var encounter:Encounter = new Encounter(party, npc);
 			
 			var src:Bitmap = new Bitmap(canvasBitmap.bitmapData);
 			var dest = new Bitmap(new BitmapData(canvasBitmap.width, canvasBitmap.height, false, 0xffffff));
 			var pixelator:Pixelator = new Pixelator(src, encounter, 200);
 			addChild(pixelator);
 			pixelator.startTransition(Pixelator.PIXELATION_MEDIUM);
-			pixelator.addEventListener(Pixelator.PIXEL_TRANSITION_COMPLETE, function(e:Event):void {
+			pixelator.addEventListener(Pixelator.PIXEL_TRANSITION_COMPLETE, function(e:Event):void {*/
 				gameState = "encounter";
 				trace('new encounter!');
 				var encounter:Encounter = new Encounter(party, npc);
 				addChild(encounter);
-			});
+			//});
 		}
 		
 		public function startDialog(sourceChar:Character, dialogXML:XML, npc:Party = null, actionCallback:Function = null):void

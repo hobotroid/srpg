@@ -12,6 +12,8 @@ package ui {
    import flash.events.*;
    import flash.utils.Timer;
    import flash.ui.Keyboard;
+   
+   import util.Utils;
 
    public class Screen extends TopLevel
    {
@@ -33,7 +35,7 @@ package ui {
          bg.graphics.drawRect(0, 0, WIDTH, HEIGHT);
          bg.graphics.endFill();
          addChild(bg);
-         0
+         
          pointerTimer = new Timer(160, 0);
          pointerTimer.addEventListener(TimerEvent.TIMER, updatePointer);
          pointerTimer.start();
@@ -87,7 +89,8 @@ package ui {
             "layout": layout,
             "columns": columns,
             "defaultCallback": defaultCallback,
-            "index": boxes.length
+            "index": boxes.length,
+			"label": label
          }
 
          //add box to screen
@@ -119,10 +122,13 @@ package ui {
       }
       
       //add a menu item that's not text
-      public function addMenuItem(destination:String, clip:MovieClip, callback:Function, callbackParams:Object=null, exitCallback:Function=null, exitCallbackParams:Object=null):void
+      public function addMenuItem(destination:String, clip:MovieClip, options:Object=null):void
       {
-         var item:Object = {"element":clip, "callback":callback, "exitCallback":exitCallback, "callbackParams": callbackParams, "exitCallbackParams": exitCallbackParams};
-         var box:Object = boxes[destination];
+		 var box:Object = boxes[destination];
+		 var defaults:Object = { callback:null, callbackParams: { }, exitCallback:null, exitCallbackParams: { }, x: null, y: null };
+		 options = Utils.mergeObjects(options, defaults);
+         var item:Object = {"element":clip, "callback":options.callback, "exitCallback":options.exitCallback, "callbackParams": options.callbackParams, "exitCallbackParams": options.exitCallbackParams};
+         
          var previousElement:MovieClip = box.menuItems.length ? box.menuItems[box.menuItems.length - 1].element : null;
          
          switch(box.layout) {
@@ -140,10 +146,12 @@ package ui {
                clip.y = Math.floor(box.menuItems.length / box.columns) * clip.height;
                break;
 			case "free":
+				clip.x = options.x;
+				clip.y = options.y;
 				break;
             default: break;
          }
-      
+		 
          box.menuItems.push(item);
          box.scrollPane.addChild(clip);
       }

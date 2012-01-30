@@ -90,11 +90,14 @@
    <character id="townsman">
       <full_name>Townsman</full_name>
       <type>townsman</type>
+	  <width>48</width>
+      <height>48</height>
       <hp>100</hp>
       <dex>40</dex>
       <str>8</str>
       <mp>10</mp>
       <speed>1</speed>
+	  <head_y>23</head_y>
       <frames>
          <frame index="376" label="downstill" default="downstill" />
          <frame index="374" label="downwalk" default="downstill" />
@@ -118,7 +121,7 @@
          <frame index="386" label="downblink" replace="downstill" speed="2" />
          
          <frame index="376" label="standard" default="downstill" />
-         <frame index="384" label="combat" default="combat" />
+         <frame index="385" label="combat" default="combat" />
          <frame index="384" label="dead" default="dead" />
       </frames>
       <collision>
