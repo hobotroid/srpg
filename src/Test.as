@@ -135,7 +135,7 @@
                     startGameTimer();
 					
 					//temporary
-					checkRandomEncounter(true);
+					//checkRandomEncounter(true);
                 });
             });
 			
