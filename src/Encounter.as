@@ -270,7 +270,6 @@
 			menus.addMenuText("actions", {label:"Things", callback:thingsSelected, callbackParams:object, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
 			state = "choosing_actions";
 			menus.switchBox("actions");
-			partySelectorTimer.stop();
 		}
       
       private function enemySelected(params:Object=null):void {
@@ -283,6 +282,7 @@ debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targe
 		  menus.switchBox("party");
 		  selectEnemy(-1);
 		  
+		  //if all party members have chosen an action + target, do turn
 		  //if all party members have chosen an action + target, do turn
 		  var actionCount:int = 0;
 		  for (var i:int = 0; i < party.length; i++) {
@@ -319,6 +319,7 @@ debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targe
 				x:actionsBox.x + actionsBox.width + 10, y:actionsBox.y, width:117, height:115, 
 				label:"enemies", defaultExitCallback: function():void {
 					menus.removeBox("enemies");
+					menus.switchBox("actions");
 				}
 			});
 			for each(var bad:Object in enemies) {
@@ -411,7 +412,6 @@ debugOut("item " + item.name + " selected, choosing target...");
             enemySelector.visible = true;
             if (!enemySelectorTimer.running) { enemySelectorTimer.start(); }*/
 			
-			trace((badClip.x+enemies[index].sprite.x) + 'x' + (badClip.y+enemies[index].sprite.y));
 			pointer.x = badClip.x + enemies[index].sprite.x;
 			pointer.y = badClip.y + enemies[index].sprite.y - pointer.height - 5;
 			pointer.visible = true;
@@ -552,7 +552,7 @@ debugOut(party[index].character.name + "'s action is: " + party[index].action);
                case 'combat':
                   results = party[index].character.sendAttack(enemies[party[index].target].character);
                   showCombatAnimation(party[index], function(e:Event):void {
-                     enemies[party[index].target].healthBar.setValue(enemies[party[index].target].character.getHP());
+                     //enemies[party[index].target].healthBar.setValue(enemies[party[index].target].character.getHP());
                      doMemberAction(index + 1);
                   });
 debugOut(results.message);
@@ -560,7 +560,7 @@ debugOut(results.message);
                case 'spell':
                   results = party[index].character.sendSpell(party[index].spell, enemies[party[index].target].character);
                   showSpellAnimation(party[index], function():void {
-                     enemies[party[index].target].healthBar.setValue(enemies[party[index].target].character.getHP());
+                     //enemies[party[index].target].healthBar.setValue(enemies[party[index].target].character.getHP());
                      doMemberAction(index + 1);
                   });
 debugOut(results.message);

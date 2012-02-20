@@ -262,7 +262,7 @@
 			party.addCharacter(carl);
             
 			party.addCharacter(phil);
-			party.addCharacter(townsman);
+			//party.addCharacter(townsman);
             
             maps[activeMap].npcs.push(party);
 		}
