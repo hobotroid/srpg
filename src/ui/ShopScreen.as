@@ -14,13 +14,13 @@
 
       public function ShopScreen(items:Array):void
       {
-         addBox(10, 10, 410, 440, "items");
-         addBox(390, 30, 100, 100, "type");
+         addBox( { x:10, y:10, width:410, height:440, label:"items"});
+		 addBox({x:390, y:30, width:100, height:100, label:"type"});
 
          //menu options
-         addMenuText("type", "BUY", switchType, "buy")
-         addMenuText("type", "SELL", switchType, "sell");
-         addMenuText("type", "EXIT", exitAction);
+         addMenuText("type", { label:"BUY", callback:switchType, callbackParams:"buy" } );
+		addMenuText("type", {label: "SELL", callback:switchType, callbackParams:"sell"});
+         addMenuText("type", {label: "EXIT", callback:exitAction});
          
          //items
          for each(var item:Item in items) {

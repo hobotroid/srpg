@@ -74,14 +74,12 @@
             }
             
 			//load and background image
-			if (mapData.properties.property.(@name == "background").@value)
-			{
-				trace(mapData.properties.property.(@name == "background").@value);
+			if (String(mapData.properties.property.(@name == "background").@value).length) {
+				trace('loading map background: '+mapData.properties.property.(@name == "background").@value);
 				backgroundLoader = new Loader();
-				backgroundLoader.contentLoaderInfo.addEventListener(Event.INIT, function(e:Event):void
-					{
-						Global.currentBackground = Bitmap(backgroundLoader.content).bitmapData;
-					});
+				backgroundLoader.contentLoaderInfo.addEventListener(Event.INIT, function(e:Event):void {
+					Global.currentBackground = Bitmap(backgroundLoader.content).bitmapData;
+				});
 				backgroundLoader.load(new URLRequest("../" + mapData.properties.property.(@name == "background").@value));
 			}
 			

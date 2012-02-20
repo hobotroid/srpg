@@ -1,302 +1,353 @@
 ﻿package {
-   import flash.display.Sprite;
-   import flash.display.Stage;
-   import flash.display.Bitmap;
-   import flash.display.BitmapData;
-   import flash.display.MovieClip;
-   import flash.geom.Matrix;
-   import flash.geom.Rectangle;
-   import flash.geom.Point;
-   import flash.events.Event;
-   import flash.events.KeyboardEvent;
-   import flash.text.TextField;
-   import flash.ui.Keyboard;
-   import com.greensock.*;
-   import com.greensock.easing.*;
-   import flash.utils.Timer;
-   import flash.events.*;
-   import mx.accessibility.UIComponentAccProps;
+	import flash.display.Sprite;
+	import flash.display.Stage;
+	import flash.display.Bitmap;
+	import flash.display.BitmapData;
+	import flash.display.MovieClip;
+	import flash.geom.Matrix;
+	import flash.geom.Rectangle;
+	import flash.geom.Point;
+	import flash.events.Event;
+	import flash.events.KeyboardEvent;
+	import flash.text.TextField;
+	import flash.ui.Keyboard;
+	import com.greensock.*;
+	import com.greensock.easing.*;
+	import flash.utils.Timer;
+	import flash.events.*;
+	import mx.accessibility.UIComponentAccProps;
+
+	import ui.DialogBox;
+	import ui.UIBar;
+	import ui.Screen;
+	import util.Utils;
    
-   import ui.DialogBox;
-   import ui.UIBar;
-   import ui.Screen;
-   import util.Utils;
-   
-   public class Encounter extends TopLevel {
-      private static const COMBATMENU_W:int = 400;
-      private static const COMBATMENU_H:int = 100;
-      private static const PADDING_LEFT:int = 50;
-      private static const PADDING_RIGHT:int = 50;
-      private static const PADDING_TOP:int = 50;
-      private static const PADDING_BOTTOM:int = 50;
-      private static const CHARACTER_SCALE:int = 1;
-      private static const PARTY_SELECTOR_SPEED:int = 60;
-      private static const ENEMY_SELECTOR_SPEED:int = 160;
-      private static var map:Map = Global.game.getActiveMap();
-      [Embed(source="../gfx/plane-fight-background.png")]
-      private static var BackgroundClass:Class;
+	public class Encounter extends TopLevel {
+		private static const COMBATMENU_W:int = 400;
+		private static const COMBATMENU_H:int = 100;
+		private static const PADDING_LEFT:int = 50;
+		private static const PADDING_RIGHT:int = 50;
+		private static const PADDING_TOP:int = 50;
+		private static const PADDING_BOTTOM:int = 50;
+		private static const CHARACTER_SCALE:int = 1;
+		private static const PARTY_SELECTOR_SPEED:int = 60;
+		private static const ENEMY_SELECTOR_SPEED:int = 160;
+		private static var map:Map = Global.game.getActiveMap();
+		[Embed(source="../gfx/plane-fight-background.png")]
+		private static var BackgroundClass:Class;
+
+		private var background:Bitmap;
+		private var party:Array = new Array();
+		private var enemies:Array = new Array();
+		private var goodParty:Party, badParty:Party;
+		private var goodClip:MovieClip = new MovieClip();
+		private var badClip:MovieClip = new MovieClip();
+		private var selectedEnemy:int = -1;
+		private var selectedMember:int = -1;
+		private var state:String = "";
+		private var pointer:Bitmap;
+
+		private var menus:Screen = new Screen(false);
+		private var debugField:TextField = new TextField();
+
+		private var partySelector:Sprite = new Sprite();
+		private var partySelectorTimer:Timer = new Timer(PARTY_SELECTOR_SPEED, 0);
+		private var enemySelector:Bitmap;
+		private var enemySelectorTimer:Timer = new Timer(ENEMY_SELECTOR_SPEED, 0);
+		private var enemySelectorFrame:int = 0;
       
-      private var background:Bitmap;
-      private var party:Array = new Array();
-      private var enemies:Array = new Array();
-      private var goodParty:Party, badParty:Party;
-      private var goodClip:MovieClip = new MovieClip();
-      private var badClip:MovieClip = new MovieClip();
-      private var selectedEnemy:int = -1;
-      private var selectedMember:int = -1;
-      private var state:String = "";
-      
-      private var menus:Screen = new Screen(false);
-      private var debugField:TextField = new TextField();
-      
-      private var partySelector:Sprite = new Sprite();
-      private var partySelectorTimer:Timer = new Timer(PARTY_SELECTOR_SPEED, 0);
-      private var enemySelector:Bitmap;
-      private var enemySelectorTimer:Timer = new Timer(ENEMY_SELECTOR_SPEED, 0);
-      private var enemySelectorFrame:int = 0;
-      
-      public function Encounter(goodies:Party, baddies:Party) 
-      {
-         var count:int = 0;
-         addEventListener(Event.ADDED_TO_STAGE, init);
-         goodParty = goodies;
-         badParty = baddies;
+		public function Encounter(goodies:Party, baddies:Party) 
+		{
+			var count:int = 0;
+			addEventListener(Event.ADDED_TO_STAGE, init);
+			goodParty = goodies;
+			badParty = baddies;
          
-         //set up party array
-         for each(var good:Character in goodies.characters) {
-            good.setAnimState(Global.STATE_COMBAT);
-			good.setState(Global.STATE_COMBAT);0
-            var object:Object = {};
-            object.character = good;
-            object.bitmap = new Bitmap(new BitmapData(good.width, good.height));
-            object.sprite = new Sprite();
-            object.index = count;
-            object.state = "waiting";
-            this.party.push(object);
-            updateCharacter(object);
-            
-            count++;
-         }
+			//set up party array
+			for each(var good:Character in goodies.characters) {
+				good.setAnimState(Global.STATE_COMBAT);
+				good.setState(Global.STATE_COMBAT);0
+				var object:Object = {};
+				object.character = good;
+				object.bitmap = new Bitmap(new BitmapData(good.width, good.height));
+				object.sprite = new Sprite();
+				object.index = count;
+				object.state = "waiting";
+				this.party.push(object);
+				updateCharacter(object);
+
+				count++;
+			}
          
-         //set up enemies array
-         count = 0;
-         for each(var bad:Character in baddies.characters) {
-            bad.setAnimState(Global.STATE_COMBAT);
-            object = {};
-            object.character = bad;
-            object.bitmap = new Bitmap(new BitmapData(bad.width, bad.height));
-            object.sprite = new Sprite();
-            object.index = count;
-            object.state = "waiting";
-            this.enemies.push(object);
-            updateCharacter(object);
-            
-            count++;
-         }
+			//set up enemies array
+			count = 0;
+			for each(var bad:Character in baddies.characters) {
+				bad.setAnimState(Global.STATE_COMBAT);
+				object = {};
+				object.character = bad;
+				object.bitmap = new Bitmap(new BitmapData(bad.width, bad.height));
+				object.sprite = new Sprite();
+				object.index = count;
+				object.state = "waiting";
+				this.enemies.push(object);
+				updateCharacter(object);
+
+				count++;
+			}
          
-         //Set up frames for party selector animation
-         var frameIndexes:Array = [350, 351, 352, 353, 354, 355, 337,336, 335, 334, 333];
-         for (var i:int = 0; i < frameIndexes.length; i++) {
-            var bitmap:Bitmap = new Bitmap(new BitmapData(48, 48));
-            bitmap.bitmapData.copyPixels(
-               Global.tileset48, 
-               new Rectangle((frameIndexes[i] % 17) * 48, (int(frameIndexes[i]/17)) * 48, 48, 48*2),
-               new Point(0, 0)
-            );
-            bitmap.visible = false;
-            partySelector.addChild(bitmap);
-         }
-         partySelector.visible = false;
-         partySelectorTimer.addEventListener(TimerEvent.TIMER, partySelectorTimerFired);
-         
-         //Set up frames for enemy selector animation
-         enemySelector = new Bitmap(new BitmapData(Global.game.pointer[0].width, Global.game.pointer[0].height, true));
-         enemySelector.bitmapData.copyPixels(
-            Global.game.pointer[0].bitmapData, 
-            new Rectangle(0, 0, Global.game.pointer[0].width, Global.game.pointer[0].height),
-            new Point(0, 0)
-         );
-         enemySelector.visible = false;
-         enemySelector.scaleX = -1;
-         enemySelectorTimer.addEventListener(TimerEvent.TIMER, enemySelectorTimerFired);
-         
-         //Background
-         background = new BackgroundClass();
-         
-         
-         
-         
-         
-         
-         
-         
-         
-         
-         
-         
-		 Utils.resizeMe(background, Global.gameWidth, Global.gameHeight);
-         addChild(background);
-         
-         //place sprites
-         for each(var member:Object in party) {
-            member.sprite.scaleX = member.sprite.scaleY = CHARACTER_SCALE;
-            member.sprite.y = member.sprite.height * member.index;
-            member.original_x = 0;
-            member.original_y = member.sprite.y;
-            goodClip.addChild(member.sprite);
-debugOut('added bitmap for ' + member.character.name + ' (y='+member.sprite.y+')');
-         }
-         goodClip.x = width - PADDING_RIGHT - goodClip.width;
-         goodClip.y = height / 2 - goodClip.height / 2;
-         addChild(goodClip);
-         goodClip.addChild(partySelector);
-         
-         for each(var enemy:Object in enemies) {
-            enemy.sprite.scaleX = enemy.sprite.scaleY = CHARACTER_SCALE;
-            enemy.sprite.y = enemy.sprite.height * enemy.index;
-            enemy.original_x = 0;
-            enemy.original_y = member.sprite.y;
-debugOut('added bitmap for ' + enemy.character.name + ' (y='+enemy.sprite.y+')');
-            badClip.addChild(enemy.sprite);
-         }
-         badClip.x = PADDING_LEFT;
-         badClip.y = height / 2 - badClip.height / 2;
-         addChild(badClip);
-         badClip.addChild(enemySelector);
-         
-         //place debug output
-         debugField.width = width - 100;
-         debugField.height = 100;
-         debugField.x = width / 2 - debugField.width / 2;
-         debugField.y = 10;
-         debugField.border = true;
-         debugField.borderColor = 0xff0000;
-         debugField.background = true;
-         debugField.backgroundColor = 0xffffff;
-		 debugField.visible = false;
-         addChild(debugField);
-         
-         //menus
-         menus.addBox(10,            height - 110, width / 2 - 20, 100, "party");
-         menus.addBox(width / 2 + 5, height - 110, width / 2 - 20, 100, "enemies");
-		 
-         menus.addMenuChangeCallback("party", partyChanged);
-         var clip:MovieClip;
-         for each(member in party) {
-            clip = new MovieClip();
-            member.healthBar = new UIBar(0xFF0000, enemy.character.getMaxHP(), 'hp');
-            member.healthBar.y = 10;
-            clip.addChild(member.healthBar);
-            clip.addChild(Global.makeText(member.character.name));
-            menus.addMenuItem("party", clip, {callback: partySelected, callbackParams: member});
-         }
-         for each(enemy in enemies) {
-            clip = new MovieClip();
-            enemy.healthBar = new UIBar(0xFF0000, enemy.character.getMaxHP(), 'hp');
-            enemy.healthBar.y = 10;
-            clip.addChild(enemy.healthBar);
-            clip.addChild(Global.makeText(enemy.character.name));
-            
-            menus.addMenuItem("enemies", clip, null);
-         }
-		 
-		 //new bottom menu
-		 var heads:MovieClip = new MovieClip();
-		 var count:int = 0, HEAD_WIDTH:int = 90, HEAD_HEIGHT:int = 90, BOTTOM_BAR_WIDTH:int = width - 20, BARS_HEIGHT:int = 25, HEAD_PADDING:int = 15;
-		 menus.addBox(10, height - 300, BOTTOM_BAR_WIDTH, 128, "bottom", "free", 0, 0xffffff);
-		 for each(good in goodies.characters) {
-			 trace(good.getState().type);
-			 
-			//faces
-            var headBmp:Bitmap = new Bitmap(new BitmapData(good.width, good.height));
-			var currentFrame:int = good.getCurrentFrame();
-			headBmp.bitmapData.copyPixels(
-				Global.tileset48, new Rectangle((currentFrame % 17) * 48, (int(currentFrame / 17)) * 48, good.width, good.height), new Point(0, 0)
+			//Set up frames for party selector animation
+			var frameIndexes:Array = [350, 351, 352, 353, 354, 355, 337,336, 335, 334, 333];
+			for (var i:int = 0; i < frameIndexes.length; i++) {
+				var bitmap:Bitmap = new Bitmap(new BitmapData(48, 48));
+				bitmap.bitmapData.copyPixels(
+				   Global.tileset48, 
+				   new Rectangle((frameIndexes[i] % 17) * 48, (int(frameIndexes[i]/17)) * 48, 48, 48*2),
+				   new Point(0, 0)
+				);
+				bitmap.visible = false;
+				partySelector.addChild(bitmap);
+			}
+			partySelector.visible = false;
+			partySelectorTimer.addEventListener(TimerEvent.TIMER, partySelectorTimerFired);
+
+			//Set up frames for enemy selector animation
+			enemySelector = new Bitmap(new BitmapData(Global.game.pointer[0].width, Global.game.pointer[0].height, true));
+			enemySelector.bitmapData.copyPixels(
+				Global.game.pointer[0].bitmapData, 
+				new Rectangle(0, 0, Global.game.pointer[0].width, Global.game.pointer[0].height),
+				new Point(0, 0)
 			);
-			headBmp.bitmapData = Utils.autoCrop(headBmp.bitmapData);
-			headBmp.bitmapData = Utils.crop(headBmp.bitmapData, new Rectangle(0, 0, headBmp.bitmapData.width, good.head_cutoff_y));			
-			Utils.resizeMe(headBmp, HEAD_WIDTH, HEAD_HEIGHT);
-			headBmp.x = HEAD_PADDING * count + HEAD_WIDTH * count + HEAD_WIDTH / 2 - headBmp.width / 2 + 5;
-			headBmp.y = HEAD_HEIGHT / 2 - headBmp.height / 2;
-			heads.addChild(headBmp);
-			
-			//mp+sp bars
-			var hpBar:UIBar = new UIBar(Global.BAR_COLOR_HP, good.getMaxHP(), '');
-			var spBar:UIBar = new UIBar(Global.BAR_COLOR_SP, good.getMaxMP(), '');
-			hpBar.y = 90;
-			hpBar.x = HEAD_PADDING * count + count * HEAD_WIDTH + 9;
-			spBar.y = 100;
-			spBar.x = HEAD_PADDING * count + count * HEAD_WIDTH;
-			heads.addChild(hpBar);
-			heads.addChild(spBar);
-			
-			//debug boxes
-			/*var debugBox:Bitmap = new Bitmap(new BitmapData(HEAD_WIDTH, HEAD_HEIGHT, true, 0xFF0000FF));
-			debugBox.x = headBmp.x;
-			debugBox.y = headBmp.y;
-			trace(debugBox.x + ' x ' + debugBox.y + ' - ' + debugBox.width + ' x ' + debugBox.height);
-			heads.addChild(debugBox);*/
-			
-			count++;
- 		 }
-		 menus.addMenuItem("bottom", heads, {x: BOTTOM_BAR_WIDTH - heads.width - 10, y: 0});
-		 //Utils.addBorder(heads);
-         addChild(menus);
-      }
-      
-      private function init(e:Event):void
-      {
-         newTurn();
-      }
-      
-      private function partySelected(object:Object):void
-      {
-debugOut(object.character.name + " selected, giving action choices...");
-         selectedMember = object.index;
-         menus.addBox(30, height - 150, 110,  100, "actions");
-         menus.addMenuText("actions", "Attack", attackSelected, object, function():void { menus.removeBox("actions"); menus.switchBox("party"); } );
-         menus.addMenuText("actions", "Science", scienceSelected, object, function():void { menus.removeBox("actions"); menus.switchBox("party"); } );
-         menus.addMenuText("actions", "Things", thingsSelected, object, function():void { menus.removeBox("actions"); menus.switchBox("party"); } );
-         state = "choosing_actions";
-         menus.switchBox("actions");
-         partySelectorTimer.stop();
-      }
-      
-      
-      
-      
-      
-      
-      
-      
-      /************ MENU OPTIONS WHEN SELECTING A PARTY MEMBER ************/
-      private function attackSelected(object:Object):void 
-      {
-debugOut("attack selected, choosing enemy...");
-         party[selectedMember].action = "combat";
-         menus.switchBox(null);
-         selectFirstEnemy();
+			enemySelector.visible = false;
+			enemySelector.scaleX = -1;
+			enemySelectorTimer.addEventListener(TimerEvent.TIMER, enemySelectorTimerFired);
+
+			//Background
+			background = new BackgroundClass();
          
-         menus.removeKeyListener();
-         state = "choosing_target";
-         addKeyListener();
-      }
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+         
+			Utils.resizeMe(background, Global.gameWidth, Global.gameHeight);
+			addChild(background);
+         
+			//place sprites
+			for each(var member:Object in party) {
+				member.sprite.scaleX = member.sprite.scaleY = CHARACTER_SCALE;
+				member.sprite.y = member.sprite.height * member.index;
+				member.original_x = 0;
+				member.original_y = member.sprite.y;
+				goodClip.addChild(member.sprite);
+				debugOut('added bitmap for ' + member.character.name + ' (y='+member.sprite.y+')');
+			}
+			goodClip.x = width - PADDING_RIGHT - goodClip.width;
+			goodClip.y = height / 2 - goodClip.height / 2;
+			addChild(goodClip);
+			goodClip.addChild(partySelector);
+         
+			for each(var enemy:Object in enemies) {
+				enemy.sprite.scaleX = enemy.sprite.scaleY = CHARACTER_SCALE;
+				enemy.sprite.y = enemy.sprite.height * enemy.index;
+				enemy.original_x = 0;
+				enemy.original_y = member.sprite.y;
+				debugOut('added bitmap for ' + enemy.character.name + ' (y='+enemy.sprite.y+')');
+				badClip.addChild(enemy.sprite);
+			}
+			badClip.x = PADDING_LEFT;
+			badClip.y = height / 2 - badClip.height / 2;
+			addChild(badClip);
+			badClip.addChild(enemySelector);
+         
+			//place debug output
+			debugField.width = width - 100;
+			debugField.height = 100;
+			debugField.x = width / 2 - debugField.width / 2;
+			debugField.y = 10;
+			debugField.border = true;
+			debugField.borderColor = 0xff0000;
+			debugField.background = true;
+			debugField.backgroundColor = 0xffffff;
+			debugField.visible = true;
+			addChild(debugField);
+		 
+			//new bottom menu
+			var heads:MovieClip = new MovieClip();
+			var count:int = 0, HEAD_WIDTH:int = 90, HEAD_HEIGHT:int = 90, BOTTOM_BAR_WIDTH:int = width - 20, 
+				BARS_HEIGHT:int = 25, HEAD_PADDING:int = 15, BOTTOM_Y:int = height-135;
+			menus.addBox({x:10, y:BOTTOM_Y, width:BOTTOM_BAR_WIDTH, height:128, label:"party", layout:"free", columns:0, color:0xffffff});
+			for each(good in goodies.characters) {
+				var headClip:MovieClip = new MovieClip();
+				
+				//faces
+				var headBmp:Bitmap = new Bitmap(new BitmapData(good.width, good.height));
+				var currentFrame:int = good.getCurrentFrame();
+				headBmp.bitmapData.copyPixels(
+					Global.tileset48, new Rectangle((currentFrame % 17) * 48, (int(currentFrame / 17)) * 48, good.width, good.height), new Point(0, 0)
+				);
+				headBmp.bitmapData = Utils.autoCrop(headBmp.bitmapData);
+				headBmp.bitmapData = Utils.crop(headBmp.bitmapData, new Rectangle(0, 0, headBmp.bitmapData.width, good.head_cutoff_y));			
+				Utils.resizeMe(headBmp, HEAD_WIDTH, HEAD_HEIGHT);
+				//headBmp.x = HEAD_PADDING * count + HEAD_WIDTH * count + HEAD_WIDTH / 2 - headBmp.width / 2 + 5;
+				//headBmp.y = HEAD_HEIGHT / 2 - headBmp.height / 2;
+				//headClip.x = HEAD_PADDING * count + HEAD_WIDTH * count + HEAD_WIDTH / 2 - headBmp.width / 2 + 5;
+				//headClip.y = HEAD_HEIGHT / 2 - headBmp.height / 2;
+				//heads.addChild(headBmp);
+				headClip.addChild(headBmp);
+				
+				//mp+sp bars
+				var hpBar:UIBar = new UIBar(Global.BAR_COLOR_HP, good.getMaxHP(), '');
+				var spBar:UIBar = new UIBar(Global.BAR_COLOR_SP, good.getMaxMP(), '');
+				hpBar.y = 90;
+				//hpBar.x = HEAD_PADDING * count + count * HEAD_WIDTH + 9;
+				hpBar.x = 9;
+				spBar.y = 100;
+				//spBar.x = HEAD_PADDING * count + count * HEAD_WIDTH;
+				//heads.addChild(hpBar);
+				//heads.addChild(spBar);
+				headClip.addChild(hpBar);
+				headClip.addChild(spBar);
+				
+				//debug boxes
+				/*var debugBox:Bitmap = new Bitmap(new BitmapData(HEAD_WIDTH, HEAD_HEIGHT, true, 0xFF0000FF));
+				debugBox.x = headBmp.x;
+				debugBox.y = headBmp.y;
+				trace(debugBox.x + ' x ' + debugBox.y + ' - ' + debugBox.width + ' x ' + debugBox.height);
+				heads.addChild(debugBox);*/
+				
+				menus.addMenuItem("party", headClip, {
+					x: 290 + HEAD_PADDING * count + HEAD_WIDTH * count + HEAD_WIDTH / 2 - headBmp.width / 2 + 5, 
+					y: 0,//HEAD_HEIGHT / 2 - headBmp.height / 2,
+					callback: partySelected,
+					callbackParams: party[0]
+				});
+				
+				count++;
+			}
+
+			//add party menu
+			menus.addMenuChangeCallback("party", partyChanged);
+			addChild(menus);
+
+			//little dialog bubble indicator
+			pointer = new Bitmap(new BitmapData(48, 48));
+			pointer.bitmapData.copyPixels(
+				Global.tileset48, 
+				new Rectangle((68 % 17) * 48, (int(68/17)) * 48, 48, 48*2),
+				new Point(0, 0)
+			);
+			pointer.visible = false;
+			this.addChild(pointer);
+
+			//debug mouse movement
+			/*this.addEventListener(MouseEvent.MOUSE_MOVE, function(e:MouseEvent) {
+			debugOut(mouseX + 'x' + mouseY); 
+			});*/
+		}
       
-      private function scienceSelected(object:Object):void 
-      {
-debugOut("science selected, choosing spell...");
-         state = "choosing_science";
+		private function init(e:Event):void {
+			stage.focus = this;
+			newTurn();
+		}
+      
+		private function partySelected(object:Object):void
+		{
+			var partyBox:Object = menus.getBox("party");
+			var ACTIONS_W:int = 92;
+			var ACTIONS_H:int = 114;
+			debugOut(object.character.name + " selected, giving action choices...");
+			selectedMember = object.index;
+
+			menus.addBox({x:partyBox.x + 10, y:partyBox.y + partyBox.height/2 - ACTIONS_H/2, width:ACTIONS_W, height:ACTIONS_H, label:"actions"});
+			menus.addMenuText("actions", {label:"Attack", callback:attackSelected, callbackParams:object, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
+			menus.addMenuText("actions", {label:"Science", callback:scienceSelected, callbackParams:object, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
+			menus.addMenuText("actions", {label:"Things", callback:thingsSelected, callbackParams:object, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
+			state = "choosing_actions";
+			menus.switchBox("actions");
+			partySelectorTimer.stop();
+		}
+      
+      private function enemySelected(params:Object=null):void {
+		  party[selectedMember].target = selectedEnemy;
+debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targets: ' + enemies[selectedEnemy].character.name + ' (' + selectedEnemy + ')');
+		  removeKeyListener();
+		  menus.removeBox("actions");
+		  menus.removeBox("science");
+		  menus.removeBox("enemies");
+		  menus.switchBox("party");
+		  selectEnemy(-1);
+		  
+		  //if all party members have chosen an action + target, do turn
+		  var actionCount:int = 0;
+		  for (var i:int = 0; i < party.length; i++) {
+			 if (party[i].target != null) { 
+				actionCount++; 
+			 } else {
+				selectNextMember();
+				break;
+			 }
+		  }
+		  if (actionCount == party.length) {
+			 startTurn();
+			 return;
+		  }
+		  
+		  menus.addKeyListener();
+	  }
+      
+      
+      
+      
+      
+      
+		/************ MENU OPTIONS WHEN SELECTING A PARTY MEMBER ************/
+		private function attackSelected(object:Object):void 
+		{
+			debugOut("attack selected, choosing enemy...");
+			var actionsBox:Object = menus.getBox("actions");
+			party[selectedMember].action = "combat";
+			menus.switchBox(null);
+			selectFirstEnemy();
+		 
+			menus.addBox( {
+				x:actionsBox.x + actionsBox.width + 10, y:actionsBox.y, width:117, height:115, 
+				label:"enemies", defaultExitCallback: function():void {
+					menus.removeBox("enemies");
+				}
+			});
+			for each(var bad:Object in enemies) {
+				menus.addMenuText("enemies", {label:bad.character.name, callback:enemySelected});
+			}
+			menus.addMenuChangeCallback("enemies", function(index:int) {
+				selectEnemy(index);
+			});
+			menus.switchBox("enemies");
          
-         menus.addBox(60, height - 200, 400,  100, "science");
-         var char:Character = party[selectedMember].character;
-         var spells:Array = char.getSpells();
-         
-         for each(var spell:Spell in spells) {
-            menus.addMenuText("science", spell.name, spellSelected, spell, function():void { menus.removeBox("science"); menus.switchBox("actions"); } );
-         }
-         
-         menus.switchBox("science");
-      }
+			//menus.removeKeyListener();
+			state = "choosing_target";
+			//addKeyListener();
+		}
+      
+		private function scienceSelected(object:Object):void {
+			debugOut("science selected, choosing spell...");
+			state = "choosing_science";
+
+			menus.addBox({x:60, y:height - 200, width:400, height:100, label:"science"});
+			var char:Character = party[selectedMember].character;
+			var spells:Array = char.getSpells();
+
+			for each(var spell:Spell in spells) {
+				menus.addMenuText("science", {label:spell.name, callback:spellSelected, callbackParams:spell, exitCallback:function():void { menus.removeBox("science"); menus.switchBox("actions"); } });
+			}
+
+			menus.switchBox("science");
+		}
       
       private function thingsSelected(object:Object):void 
       {
@@ -304,11 +355,11 @@ debugOut("things selected, choosing inventory item...");
          var char:Character = party[selectedMember].character;
          state = "choosing_thing";
          if (goodParty.inventory.hasCombatItem()) {
-            menus.addBox(60, height - 200, 500,  100, "things");
+            menus.addBox({x:60, y:height - 200, width:500, height:100, label:"things"});
             var inventory:Object = goodParty.inventory.getCombatItems();
             
             for each(var item:Item in inventory) {
-               menus.addMenuText("things", item.name, itemSelected, item, function():void { menus.removeBox("things"); menus.switchBox("actions"); } );
+               menus.addMenuText("things", {label:item.name, callback:itemSelected, callbackParams:item, exitCallback:function():void { menus.removeBox("things"); menus.switchBox("actions"); } });
             }
             
             menus.switchBox("things");
@@ -349,16 +400,21 @@ debugOut("item " + item.name + " selected, choosing target...");
       /********************** FUNCTIONS FOR CHOOSING AN ENEMY / PARTY MEMBER ***************************/
       private function selectEnemy(index:int=-1):void
       {
-         if (selectedEnemy > -1) {
+         /*if (selectedEnemy > -1) {
             enemySelector.visible = false;
             enemySelectorTimer.stop();
-         }
+         }*/
          
          if (index > -1) {
-            enemySelector.x = enemies[index].sprite.x + enemies[index].sprite.width + enemySelector.width/2;
+            /*enemySelector.x = enemies[index].sprite.x + enemies[index].sprite.width + enemySelector.width/2;
             enemySelector.y = enemies[index].sprite.y;
             enemySelector.visible = true;
-            if (!enemySelectorTimer.running) { enemySelectorTimer.start(); }
+            if (!enemySelectorTimer.running) { enemySelectorTimer.start(); }*/
+			
+			trace((badClip.x+enemies[index].sprite.x) + 'x' + (badClip.y+enemies[index].sprite.y));
+			pointer.x = badClip.x + enemies[index].sprite.x;
+			pointer.y = badClip.y + enemies[index].sprite.y - pointer.height - 5;
+			pointer.visible = true;
          }
          
          selectedEnemy = index;
@@ -550,30 +606,7 @@ debugOut(results.message);
                }
                      
                if (e.keyCode == 88) { //X
-                  party[selectedMember].target = selectedEnemy;
-debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targets: ' + enemies[selectedEnemy].character.name + ' (' + selectedEnemy + ')');
-                  removeKeyListener();
-                  menus.removeBox("actions");
-                  menus.removeBox("science");
-                  menus.switchBox("party");
-                  selectEnemy( -1);
-                  
-                  //if all party members have chosen an action + target, do turn
-                  var actionCount:int = 0;
-                  for (var i:int = 0; i < party.length; i++) {
-                     if (party[i].target != null) { 
-                        actionCount++; 
-                     } else {
-                        selectNextMember();
-                        break;
-                     }
-                  }
-                  if (actionCount == party.length) {
-                     startTurn();
-                     return;
-                  }
-                  
-                  menus.addKeyListener();
+				  enemySelected();
                } else if(e.keyCode == 90) { //Z
                   selectEnemy( -1);
                   if (party[selectedMember].action == "spell") {
@@ -599,6 +632,9 @@ debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targe
          partySelector.x = party[index].sprite.x;
          partySelector.y = party[index].sprite.y+7;
          partySelector.visible = true;
+		 pointer.x = goodClip.x + party[index].sprite.x;
+		 pointer.y = goodClip.y + party[index].sprite.y - party[index].sprite.height - 5;
+		 pointer.visible = true;
          if(!partySelectorTimer.running) { partySelectorTimer.start(); }
       }
       

@@ -27,7 +27,10 @@
          this.endCallback = endCallback;
          var initialPrompt:XML = XML(conversation.prompt.(@type=="initial"));
          
-         addBox(20, Global.game.stage.stageHeight - 200, Global.game.stage.stageWidth - 40, 125, "dialog", "vertical", 0, Screen.DEFAULT_BOX_COLOR, defaultChoice);
+         addBox({
+			x:20, y:Global.game.stage.stageHeight - 200, width:Global.game.stage.stageWidth - 40, height:125, 
+			label:"dialog", layout:"vertical", columns:0, color:Screen.DEFAULT_BOX_COLOR, defaultCallback:defaultChoice
+		 });
          displayPrompt({prompt: initialPrompt});
          switchBox("dialog"); 
          
@@ -50,7 +53,7 @@
                var choiceText:String = choice.text();
                var choiceAction:String = choice.@action;
 
-               addMenuText("dialog", choiceText, displayPrompt, { prompt: conversation.prompt.(@id == choice.@promptId) } );
+               addMenuText("dialog", {label:choiceText, callback:displayPrompt, callbackParams:{ prompt: conversation.prompt.(@id == choice.@promptId) }} );
             }
          } else if (actionType.length) {
 trace(actionType);

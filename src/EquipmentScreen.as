@@ -18,19 +18,19 @@
 
       public function EquipmentScreen(party:Party)
       {
-         addBox(10, 10, WIDTH-20, 40, "characters", "horizontal");
-         addBox(10, 60, WIDTH-20, 150, "equip", "columns", 2);
-         addBox(10, 220, WIDTH-20, 250, "inventory", "columns", 3);
+         addBox({x:10, y:10, width:WIDTH-20, height:40, label:"characters", layout:"horizontal"});
+         addBox({x:10, y:60, width:WIDTH-20, height:150, label:"equip", layout:"columns", columns:2});
+         addBox({x:10, y:220, width:WIDTH-20, height:250, label:"inventory", layout:"columns", columns:3});
       
          //characters
          this.party = party;
          for each(var char:Character in party.characters) {
-            addMenuText("characters", char.name, characterSelected, char, exitAction);
+            addMenuText("characters", {label:char.name, callback:characterSelected, callbackParams:char, exitCallback:exitAction});
          }
 
          //items
          for each(var item:Object in party.inventory.getItems()) {
-            addMenuText("inventory", item.item.name+(item.quantity>1?" x"+item.quantity:""), itemSelected, item.item, itemExit);
+            addMenuText("inventory", {label:item.item.name+(item.quantity>1?" x"+item.quantity:""), callback:itemSelected, callbackParams:item.item, exitCallback:itemExit});
          }
          
          //equipment slots

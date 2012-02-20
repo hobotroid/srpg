@@ -14,8 +14,8 @@
 
       public function CharacterScreen(party:Party)
       {
-         addBox(10, 10, 410, 440, "characters");
-         addBox(390, 30, 200, 215, "menu");
+         addBox({x:10, y:10, width:410, height:440, label:"characters"});
+         addBox({x:390, y:30, width:200, height:215, label:"menu"});
 
          //characters
          this.party = party;
@@ -53,10 +53,10 @@
          }
          
          //menu options
-         addMenuText("menu", "EQUIPMENT", switchBox, "characters", exitAction)
-         addMenuText("menu", "SCIENCE", switchBox, "characters", exitAction);
-         addMenuText("menu", "ITEM", switchBox, "characters", exitAction);
-         addMenuText("menu", "EXIT", exitAction);
+         addMenuText("menu", {label:"EQUIPMENT", callback:switchBox, callbackParams: "characters", exitCallback:exitAction});
+         addMenuText("menu", {label:"SCIENCE", callback:switchBox, callbackParams:"characters", exitCallback:exitAction});
+         addMenuText("menu", {label:"ITEM", callback:switchBox, callbackParams:"characters", exitCallback:exitAction});
+         addMenuText("menu", {label:"EXIT", callback:exitAction});
 
          switchBox("menu"); 
          
