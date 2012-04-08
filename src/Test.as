@@ -43,6 +43,7 @@
 		public var canvas:BitmapData;
 		public var background:BitmapData;
 		public var pointer:Array = new Array();
+		public var corner:Bitmap = new Bitmap();
 		private var tempCanvas:BitmapData;
 		private var canvasBitmap:Bitmap;
 		public var mapScrollX:int = 0;
@@ -126,6 +127,10 @@
                     pointer[2] = new Bitmap(new BitmapData(48, 48, true));
                     pointer[2].bitmapData.copyPixels(Global.tileset48, new Rectangle((325 % 17) * 48, (int(325 / 17)) * 48, 48, 48), new Point(0, 0));
                     pointer[3] = pointer[1];
+					
+					//corner
+					corner = new Bitmap(new BitmapData(24, 24, true));
+					corner.bitmapData.copyPixels(Global.tileset24, new Rectangle((6 % 34) * 24, (int(6 / 34)) * 24, 24, 24), new Point(0, 0));
                     
                     initParty();
                     addKeyListeners();
@@ -600,6 +605,12 @@
 					gameState = "characterscreen";
 					break;
 				case 70: //fullscreen - f key
+					/*this.width = flash.system.Capabilities.screenResolutionX;
+					this.height = flash.system.Capabilities.screenResolutionY;
+					this.stage.align = flash.display.StageAlign.TOP_LEFT;
+					this.stage.scaleMode = StageScaleMode.NO_SCALE;
+					this.stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE*/
+					
 					//if normal size, go to fullscreen, else go to normal size
 					if (FlexGlobals.topLevelApplication.stage.displayState == StageDisplayState.NORMAL)
 					{
@@ -702,7 +713,7 @@
 				
 				//get random mob
 				var mobArray:Array = [];
-				for (var i:int = 0; i < Utils.randRange(1, 3); i++)
+				for (var i:int = 0; i < Utils.randRange(3, 3); i++)
 				{
 					var guys:Array = ["file ghost", "file ghost", "file ghost"];
 					//var guys:Array = ["dogs", "dogs", "dogs"];

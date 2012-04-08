@@ -35,9 +35,9 @@
 			Font.registerFont(chicago);
 			
 			textFormatMain = new TextFormat();
-			textFormatMain.font = "Chicago";
+			textFormatMain.font = "pixChicago";
 			textFormatMain.color = 0xffffff;
-			textFormatMain.size = 16;
+			textFormatMain.size = 10;
 			//textFormatMain.letterSpacing = 0.8;
 
 		}

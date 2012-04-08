@@ -6,8 +6,11 @@ package ui {
 	import flash.display.LineScaleMode;
 	import flash.display.CapsStyle;
 	import flash.display.JointStyle;
+	import flash.geom.ColorTransform;
+	import flash.geom.Matrix;
 	import flash.text.TextField;
 	import flash.geom.Rectangle;
+	import flash.geom.ColorTransform;
 	import flash.geom.Point;
 	import flash.events.*;
 	import flash.utils.Timer;
@@ -51,8 +54,6 @@ package ui {
 			var box:Shape = new Shape();
 			var clip:MovieClip = new MovieClip();  
 			box.graphics.beginFill(options.color);
-			//box.graphics.lineStyle(10, /*0x5fa7cd*/0xff0000, 1.0, true, LineScaleMode.NORMAL, CapsStyle.ROUND, JointStyle.ROUND);
-			//box.graphics.drawRect(0, 0, w, h);
 			box.graphics.drawRoundRect(0, 0, options.width, options.height, 20, 20)
 			box.graphics.endFill();
 			clip.x = options.x;
@@ -78,6 +79,17 @@ package ui {
 			);
 			pointer.visible = false;
 			clip.addChild(pointer);
+			
+			//corners
+			var corners:Bitmap = new Bitmap(new BitmapData(options.width, options.height, true, 0x00000000));
+			var ct:ColorTransform = new ColorTransform();
+			ct.color = options.color;
+			corners.bitmapData.copyPixels(Global.game.corner.bitmapData, new Rectangle(0, 0, 8, 8), new Point(0, 0));
+			corners.bitmapData.copyPixels(Global.game.corner.bitmapData, new Rectangle(16, 0, 8, 8), new Point(options.width - 8, 0));
+			corners.bitmapData.copyPixels(Global.game.corner.bitmapData, new Rectangle(0, 16, 8, 8), new Point(0, options.height - 8));
+			corners.bitmapData.copyPixels(Global.game.corner.bitmapData, new Rectangle(16, 16, 8, 8), new Point(options.width - 8, options.height - 8));
+			corners.bitmapData.colorTransform(corners.getRect(corners), ct);
+			clip.addChild(corners);
 
 			//construct object Silvia Navarro,
 			boxes[options.label] = {

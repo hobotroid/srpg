@@ -1,4 +1,5 @@
 ﻿package util {
+   import flash.automation.ActionGenerator;
    import flash.display.BitmapData;
    import flash.display.MovieClip;
    import flash.display.Shape;
@@ -16,7 +17,15 @@
 
 	public class Utils  {
 		private var instance:Utils = null;
-
+		
+		public static function degsToRads(value:int):Number {
+			return value * Math.PI / 180;
+		}
+		
+		public static function radsToDegs(value:Number):int {
+			return value * 180 / Math.PI;
+		}
+		
 		public static function randRange(low:int, high:int):int
 		{
 			return(Math.round(low + Math.random()*(high-low)));

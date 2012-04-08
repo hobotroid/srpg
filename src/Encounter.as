@@ -42,7 +42,7 @@
 		private var goodParty:Party, badParty:Party;
 		private var goodClip:MovieClip = new MovieClip();
 		private var badClip:MovieClip = new MovieClip();
-		private var selectedEnemy:int = -1;
+		private var selectedTarget:int = -1;
 		private var selectedMember:int = -1;
 		private var state:String = "";
 		private var pointer:Bitmap;
@@ -182,17 +182,17 @@
 			var count:int = 0, HEAD_WIDTH:int = 90, HEAD_HEIGHT:int = 90, BOTTOM_BAR_WIDTH:int = width - 20, 
 				BARS_HEIGHT:int = 25, HEAD_PADDING:int = 15, BOTTOM_Y:int = height-135;
 			menus.addBox({x:10, y:BOTTOM_Y, width:BOTTOM_BAR_WIDTH, height:128, label:"party", layout:"free", columns:0, color:0xffffff});
-			for each(good in goodies.characters) {
+			for each(member in party) {
 				var headClip:MovieClip = new MovieClip();
 				
 				//faces
-				var headBmp:Bitmap = new Bitmap(new BitmapData(good.width, good.height));
-				var currentFrame:int = good.getCurrentFrame();
+				var headBmp:Bitmap = new Bitmap(new BitmapData(member.character.width, member.character.height));
+				var currentFrame:int = member.character.getCurrentFrame();
 				headBmp.bitmapData.copyPixels(
-					Global.tileset48, new Rectangle((currentFrame % 17) * 48, (int(currentFrame / 17)) * 48, good.width, good.height), new Point(0, 0)
+					Global.tileset48, new Rectangle((currentFrame % 17) * 48, (int(currentFrame / 17)) * 48, member.character.width, member.character.height), new Point(0, 0)
 				);
 				headBmp.bitmapData = Utils.autoCrop(headBmp.bitmapData);
-				headBmp.bitmapData = Utils.crop(headBmp.bitmapData, new Rectangle(0, 0, headBmp.bitmapData.width, good.head_cutoff_y));			
+				headBmp.bitmapData = Utils.crop(headBmp.bitmapData, new Rectangle(0, 0, headBmp.bitmapData.width, member.character.head_cutoff_y));			
 				Utils.resizeMe(headBmp, HEAD_WIDTH, HEAD_HEIGHT);
 				//headBmp.x = HEAD_PADDING * count + HEAD_WIDTH * count + HEAD_WIDTH / 2 - headBmp.width / 2 + 5;
 				//headBmp.y = HEAD_HEIGHT / 2 - headBmp.height / 2;
@@ -202,8 +202,8 @@
 				headClip.addChild(headBmp);
 				
 				//mp+sp bars
-				var hpBar:UIBar = new UIBar(Global.BAR_COLOR_HP, good.getMaxHP(), '');
-				var spBar:UIBar = new UIBar(Global.BAR_COLOR_SP, good.getMaxMP(), '');
+				var hpBar:UIBar = new UIBar(Global.BAR_COLOR_HP, member.character.getMaxHP(), '');
+				var spBar:UIBar = new UIBar(Global.BAR_COLOR_SP, member.character.getMaxMP(), '');
 				hpBar.y = 90;
 				//hpBar.x = HEAD_PADDING * count + count * HEAD_WIDTH + 9;
 				hpBar.x = 9;
@@ -225,7 +225,7 @@
 					x: 290 + HEAD_PADDING * count + HEAD_WIDTH * count + HEAD_WIDTH / 2 - headBmp.width / 2 + 5, 
 					y: 0,//HEAD_HEIGHT / 2 - headBmp.height / 2,
 					callback: partySelected,
-					callbackParams: party[0]
+					callbackParams: member
 				});
 				
 				count++;
@@ -273,14 +273,14 @@
 		}
       
       private function enemySelected(params:Object=null):void {
-		  party[selectedMember].target = selectedEnemy;
-debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targets: ' + enemies[selectedEnemy].character.name + ' (' + selectedEnemy + ')');
+		  party[selectedMember].target = selectedTarget;
+debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targets: ' + enemies[selectedTarget].character.name + ' (' + selectedTarget + ')');
 		  removeKeyListener();
 		  menus.removeBox("actions");
 		  menus.removeBox("science");
 		  menus.removeBox("enemies");
 		  menus.switchBox("party");
-		  selectEnemy(-1);
+		  selectTarget('enemy', -1);
 		  
 		  //if all party members have chosen an action + target, do turn
 		  //if all party members have chosen an action + target, do turn
@@ -313,7 +313,7 @@ debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targe
 			var actionsBox:Object = menus.getBox("actions");
 			party[selectedMember].action = "combat";
 			menus.switchBox(null);
-			selectFirstEnemy();
+			selectFirstTarget();
 		 
 			menus.addBox( {
 				x:actionsBox.x + actionsBox.width + 10, y:actionsBox.y, width:117, height:115, 
@@ -326,7 +326,7 @@ debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targe
 				menus.addMenuText("enemies", {label:bad.character.name, callback:enemySelected});
 			}
 			menus.addMenuChangeCallback("enemies", function(index:int) {
-				selectEnemy(index);
+				selectTarget('enemy', index+1);
 			});
 			menus.switchBox("enemies");
          
@@ -375,7 +375,7 @@ debugOut("spell " + spell.name + " selected, choosing target...");
          party[selectedMember].action = "spell";
          party[selectedMember].spell = spell;
          menus.switchBox(null);
-         selectFirstEnemy();
+         selectFirstTarget();
          
          menus.removeKeyListener();
          state = "choosing_target";
@@ -388,7 +388,7 @@ debugOut("item " + item.name + " selected, choosing target...");
          party[selectedMember].action = "item";
          party[selectedMember].item = item;
          menus.switchBox(null);
-         selectFirstEnemy();
+         selectFirstTarget();
          
          menus.removeKeyListener();
          state = "choosing_target";
@@ -398,62 +398,67 @@ debugOut("item " + item.name + " selected, choosing target...");
       
       
       
-      /********************** FUNCTIONS FOR CHOOSING AN ENEMY / PARTY MEMBER ***************************/
-      private function selectEnemy(index:int=-1):void
-      {
-         /*if (selectedEnemy > -1) {
-            enemySelector.visible = false;
-            enemySelectorTimer.stop();
-         }*/
-         
-         if (index > -1) {
-            /*enemySelector.x = enemies[index].sprite.x + enemies[index].sprite.width + enemySelector.width/2;
-            enemySelector.y = enemies[index].sprite.y;
-            enemySelector.visible = true;
-            if (!enemySelectorTimer.running) { enemySelectorTimer.start(); }*/
+		/********************** FUNCTIONS FOR CHOOSING AN ENEMY / PARTY MEMBER ***************************/
+		private function selectTarget(type:String, index:int):void
+		{
+			if(type == 'enemy') {	//targetting enemy
+				pointer.x = badClip.x + enemies[index-1].sprite.x;
+				pointer.y = badClip.y + enemies[index-1].sprite.y - pointer.height - 5;
+				selectedTarget = index;
+			} else {				//targetting ally
+				pointer.x = goodClip.x + party[index-1].sprite.x;
+				pointer.y = goodClip.y + party[index-1].sprite.y - pointer.height - 5;
+				selectedTarget = -index;
+			}
 			
-			pointer.x = badClip.x + enemies[index].sprite.x;
-			pointer.y = badClip.y + enemies[index].sprite.y - pointer.height - 5;
 			pointer.visible = true;
-         }
-         
-         selectedEnemy = index;
-      }
+		}
+
+		private function selectFirstTarget():void
+		{
+			for (var i:int = 0; i < enemies.length; i++) {
+				if (enemies[i].character.getStateName() != "dead") {
+					selectTarget('enemy', i+1);
+					return;
+				}
+			}
+		}
       
-      private function selectFirstEnemy():void
-      {
-         for (var i:int = 0; i < enemies.length; i++) {
-            if (enemies[i].character.getStateName() != "dead") {
-               selectEnemy(i);
-               return;
-            }
-         }
-      }
+		private function selectNextTarget():void
+		{
+			var checkedCount:int = 0;
+			var index:int = Math.abs(selectedTarget) - 1;
+			
+			if(selectedTarget > 0) { //selecting an enemey
+				while (checkedCount < enemies.length) {
+					if (++index > enemies.length - 1) { index = 0; }
+					if (enemies[index].character.getStateName() != "dead") {
+						selectTarget('enemy', index+1);
+						return;
+					}
+					checkedCount++;
+				}
+			} else {					//selecting an ally
+				while (checkedCount < party.length) {
+					if (++index > party.length - 1) { index = 0; }
+					if (party[index].character.getStateName() != "dead") {
+						selectTarget('ally', index+1);
+						return;
+					}
+					checkedCount++;
+				}
+			}
+		}
       
-      private function selectNextEnemy():void
+      private function selectPreviousTarget():void
       {
          var checkedCount:int = 0;
-         var index:int = selectedEnemy;
-         
-         while (checkedCount < enemies.length) {
-            if (++index > enemies.length - 1) { index = 0; }
-            if (enemies[index].character.getStateName() != "dead") {
-               selectEnemy(index);
-               return;
-            }
-            checkedCount++;
-         }
-      }
-      
-      private function selectPreviousEnemy():void
-      {
-         var checkedCount:int = 0;
-         var index:int = selectedEnemy;
+         var index:int = selectedTarget;
          
          while (checkedCount < enemies.length) {
             if (--index < 0) { index = enemies.length-1; }
             if (enemies[index].character.getStateName() != "dead") {
-               selectEnemy(index);
+               selectTarget('enemy', index+1);
                return;
             }
             checkedCount++;
@@ -484,7 +489,8 @@ debugOut("-------------- new turn --------------");
       {
 debugOut('startTurn() - actions chosen for all party members, initiating turn');
          state = "turn";
-
+		
+		 partySelector.visible = false;
          doMemberAction(0);
       }
       
@@ -552,7 +558,6 @@ debugOut(party[index].character.name + "'s action is: " + party[index].action);
                case 'combat':
                   results = party[index].character.sendAttack(enemies[party[index].target].character);
                   showCombatAnimation(party[index], function(e:Event):void {
-                     //enemies[party[index].target].healthBar.setValue(enemies[party[index].target].character.getHP());
                      doMemberAction(index + 1);
                   });
 debugOut(results.message);
@@ -560,7 +565,6 @@ debugOut(results.message);
                case 'spell':
                   results = party[index].character.sendSpell(party[index].spell, enemies[party[index].target].character);
                   showSpellAnimation(party[index], function():void {
-                     //enemies[party[index].target].healthBar.setValue(enemies[party[index].target].character.getHP());
                      doMemberAction(index + 1);
                   });
 debugOut(results.message);
@@ -593,48 +597,50 @@ debugOut(results.message);
          }
       }
       
-      private function keyUpHandler(e:KeyboardEvent):void
-      {
-         switch(state) {
-            case "choosing_target":
-               if (e.keyCode == Keyboard.UP) {
-                  selectPreviousEnemy();
-               } else if (e.keyCode == Keyboard.DOWN) {
-                  selectNextEnemy();
-               } else if(e.keyCode == Keyboard.RIGHT) {
-               } else if(e.keyCode == Keyboard.LEFT) {
-               }
-                     
-               if (e.keyCode == 88) { //X
-				  enemySelected();
-               } else if(e.keyCode == 90) { //Z
-                  selectEnemy( -1);
-                  if (party[selectedMember].action == "spell") {
-                     menus.switchBox("science");
-                  } else { 
-                     menus.switchBox("actions");
-                  }
-                  removeKeyListener();
-                  menus.addKeyListener();
-               }
-               break;
-            case "choosing_member":
-               trace('CHOOSIN\'');
-               break;
-            default: break;
-         }
-         
-         e.stopPropagation();
-      }
+		private function keyUpHandler(e:KeyboardEvent):void
+		{
+			switch(state) {
+				case "choosing_target":
+					if (e.keyCode == Keyboard.UP) {
+						selectPreviousTarget();
+					} else if (e.keyCode == Keyboard.DOWN) {
+						selectNextTarget();
+					} else if (e.keyCode == Keyboard.RIGHT || e.keyCode == Keyboard.LEFT) {
+						if (selectedTarget > -1) {
+							selectTarget('ally', 1);
+						} else {
+							selectTarget('enemy', 1);
+						}
+					}
+
+					if (e.keyCode == 88) { //X
+						enemySelected();
+					} else if(e.keyCode == 90) { //Z
+						selectTarget('enemy', 1);
+						if (party[selectedMember].action == "spell") {
+							menus.switchBox("science");
+						} else { 
+							menus.switchBox("actions");
+						}
+						removeKeyListener();
+						menus.addKeyListener();
+					}
+				break;
+				case "choosing_member":
+					trace('CHOOSIN\'');
+				break;
+				default: break;
+			}
+
+			e.stopPropagation();
+		}
       
       public function partyChanged(index:int):void
       {
          partySelector.x = party[index].sprite.x;
          partySelector.y = party[index].sprite.y+7;
          partySelector.visible = true;
-		 pointer.x = goodClip.x + party[index].sprite.x;
-		 pointer.y = goodClip.y + party[index].sprite.y - party[index].sprite.height - 5;
-		 pointer.visible = true;
+
          if(!partySelectorTimer.running) { partySelectorTimer.start(); }
       }
       
@@ -652,23 +658,23 @@ debugOut(results.message);
          if (!object.sprite.contains(object.bitmap)) { object.sprite.addChild(object.bitmap); }
       }
       
-      private function showCombatAnimation(character:Object, callback:Function):void
-      {
-         showCombatAttack(character, function(e:Event):void { 
-            showCombatHit(enemies[e.target.params.character.target], function(e:Event):void { 
-               TweenMax.to(character.sprite, .5, { x:character.original_x, ease:Expo.easeInOut }); //move char back to original pos
-               callback(e);
-            });
-         });
-      }
+		private function showCombatAnimation(character:Object, callback:Function):void
+		{
+			showCombatAttack(character, function(e:Event):void { 
+				showCombatHit(enemies[e.target.params.character.target], function(e:Event):void { 
+					//move char back to original position, then callback
+					TweenMax.to(character.sprite, .5, { x:character.original_x, ease:Expo.easeInOut, onComplete: callback, onCompleteParams: [e]}); 
+				});
+			});
+		}
       
-      private function showSpellAnimation(character:Object, callback:Function):void
-      {
-         showSpellCast(character, function():void { 
-            TweenMax.to(character.sprite, .5, { x:character.original_x, ease:Expo.easeInOut }); //move char back to original pos
-            callback();
-         });
-      }
+		private function showSpellAnimation(character:Object, callback:Function):void
+		{
+			showSpellCast(character, function():void { 
+				TweenMax.to(character.sprite, .5, { x:character.original_x, ease:Expo.easeInOut }); //move char back to original pos
+				callback();
+			});
+		}
       
       //shows "pow" graphic on character that got hit by melee
       private function showCombatHit(character:Object, callback:Function):void
