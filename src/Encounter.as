@@ -272,34 +272,39 @@
 			menus.switchBox("actions");
 		}
       
-      private function enemySelected(params:Object=null):void {
-		  party[selectedMember].target = selectedTarget;
-debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targets: ' + enemies[selectedTarget].character.name + ' (' + selectedTarget + ')');
-		  removeKeyListener();
-		  menus.removeBox("actions");
-		  menus.removeBox("science");
-		  menus.removeBox("enemies");
-		  menus.switchBox("party");
-		  selectTarget('enemy', -1);
-		  
-		  //if all party members have chosen an action + target, do turn
-		  //if all party members have chosen an action + target, do turn
-		  var actionCount:int = 0;
-		  for (var i:int = 0; i < party.length; i++) {
-			 if (party[i].target != null) { 
+	private function enemySelected(params:Object=null):void {
+		party[selectedMember].target = selectedTarget;
+
+		removeKeyListener();
+		menus.removeBox("actions");
+		menus.removeBox("science");
+		menus.removeBox("enemies");
+		menus.switchBox("party");
+
+		if(selectedTarget > 0) {	//selected an enemy
+			debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targets: ' + enemies[selectedTarget-1].character.name + ' (' + selectedTarget + ')');
+		} else {				   	//selected an ally
+			debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targets: ' + party[Math.abs(selectedTarget)-1].character.name + ' (' + selectedTarget + ')');
+		}
+		selectTarget('enemy', -1);
+
+		//if all party members have chosen an action + target, do turn
+		var actionCount:int = 0;
+		for (var i:int = 0; i < party.length; i++) {
+			if (party[i].target != null) { 
 				actionCount++; 
-			 } else {
+			} else {
 				selectNextMember();
 				break;
-			 }
-		  }
-		  if (actionCount == party.length) {
-			 startTurn();
-			 return;
-		  }
-		  
-		  menus.addKeyListener();
-	  }
+			}
+		}
+		if (actionCount == party.length) {
+			startTurn();
+			return;
+		}
+
+		menus.addKeyListener();
+	}
       
       
       
@@ -350,50 +355,50 @@ debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targe
 			menus.switchBox("science");
 		}
       
-      private function thingsSelected(object:Object):void 
-      {
-debugOut("things selected, choosing inventory item...");
-         var char:Character = party[selectedMember].character;
-         state = "choosing_thing";
-         if (goodParty.inventory.hasCombatItem()) {
-            menus.addBox({x:60, y:height - 200, width:500, height:100, label:"things"});
-            var inventory:Object = goodParty.inventory.getCombatItems();
-            
-            for each(var item:Item in inventory) {
-               menus.addMenuText("things", {label:item.name, callback:itemSelected, callbackParams:item, exitCallback:function():void { menus.removeBox("things"); menus.switchBox("actions"); } });
-            }
-            
-            menus.switchBox("things");
-         } else {
-debugOut("no combat items");
-         }
-      }
+		private function thingsSelected(object:Object):void 
+		{
+			debugOut("things selected, choosing inventory item...");
+			var char:Character = party[selectedMember].character;
+			state = "choosing_thing";
+			if (goodParty.inventory.hasCombatItem()) {
+				menus.addBox({x:60, y:height - 200, width:500, height:100, label:"things"});
+				var inventory:Object = goodParty.inventory.getCombatItems();
+
+				for each(var item:Item in inventory) {
+				   menus.addMenuText("things", {label:item.name, callback:itemSelected, callbackParams:item, exitCallback:function():void { menus.removeBox("things"); menus.switchBox("actions"); } });
+				}
+
+				menus.switchBox("things");
+			} else {
+				debugOut("no combat items");
+			}
+		}
       
-      private function spellSelected(spell:Spell):void
-      {
-debugOut("spell " + spell.name + " selected, choosing target...");
-         party[selectedMember].action = "spell";
-         party[selectedMember].spell = spell;
-         menus.switchBox(null);
-         selectFirstTarget();
-         
-         menus.removeKeyListener();
-         state = "choosing_target";
-         addKeyListener();
-      }
+		private function spellSelected(spell:Spell):void
+		{
+			debugOut("spell " + spell.name + " selected, choosing target...");
+			party[selectedMember].action = "spell";
+			party[selectedMember].spell = spell;
+			menus.switchBox(null);
+			selectFirstTarget();
+
+			menus.removeKeyListener();
+			state = "choosing_target";
+			addKeyListener();
+		}
       
-      private function itemSelected(item:Item):void
-      {
-debugOut("item " + item.name + " selected, choosing target...");
-         party[selectedMember].action = "item";
-         party[selectedMember].item = item;
-         menus.switchBox(null);
-         selectFirstTarget();
+		private function itemSelected(item:Item):void
+		{
+			debugOut("item " + item.name + " selected, choosing target...");
+			party[selectedMember].action = "item";
+			party[selectedMember].item = item;
+			menus.switchBox(null);
+			selectFirstTarget();
          
-         menus.removeKeyListener();
-         state = "choosing_target";
-         addKeyListener();
-      }
+			menus.removeKeyListener();
+			state = "choosing_target";
+			addKeyListener();
+		}
       
       
       
@@ -401,6 +406,8 @@ debugOut("item " + item.name + " selected, choosing target...");
 		/********************** FUNCTIONS FOR CHOOSING AN ENEMY / PARTY MEMBER ***************************/
 		private function selectTarget(type:String, index:int):void
 		{
+			if (index == -1) return;
+			
 			if(type == 'enemy') {	//targetting enemy
 				pointer.x = badClip.x + enemies[index-1].sprite.x;
 				pointer.y = badClip.y + enemies[index-1].sprite.y - pointer.height - 5;
@@ -450,136 +457,150 @@ debugOut("item " + item.name + " selected, choosing target...");
 			}
 		}
       
-      private function selectPreviousTarget():void
-      {
-         var checkedCount:int = 0;
-         var index:int = selectedTarget;
-         
-         while (checkedCount < enemies.length) {
-            if (--index < 0) { index = enemies.length-1; }
-            if (enemies[index].character.getStateName() != "dead") {
-               selectTarget('enemy', index+1);
-               return;
-            }
-            checkedCount++;
-         }
-      }
-      
-      private function selectNextMember():void
-      {
-         menus.changeItem(1);
-      }
-      
-      
-      
-      /************************** TURN STUFF *********************************/
-      private function newTurn():void
-      {
-debugOut("-------------- new turn --------------");
-         for (var i:int = 0; i < party.length; i++) {
-            party[i].target = null;
-         }
-         menus.switchBox("party");
-         selectNextMember();
-         state = "choosing_member";
-         menus.addKeyListener();
-      }
-      
-      private function startTurn():void
-      {
-debugOut('startTurn() - actions chosen for all party members, initiating turn');
-         state = "turn";
-		
-		 partySelector.visible = false;
-         doMemberAction(0);
-      }
-      
-      private function endTurn():void
-      {
-debugOut('endTurn()');
-         var deadCount:int = 0;
-         for (var i:int = 0; i < enemies.length; i++) {
-            var char:Character = enemies[i].character;
-            
-            if(char.conditions[0] && char.conditions[0].isActive()) {
-               char.conditions[0].applyActions();
-            }
-            updateCharacter(enemies[i]);
-            
-            trace(char.name+'\'s STATE: '+char.getStateName());
-            if (char.getStateName() == "dead") {
-               if (enemies[i].state != "dead") { 
-                  doEnemyDeathAnimation(i);
-                  enemies[i].state = "dead"
-               }
-               deadCount++;
-            }
-         }
-         
-         if (deadCount >= enemies.length) {
-debugOut('ALL ENEMIES KILLED - ending combat');
-            endCombat();
-         } else {
-            newTurn();
-         }
-      }
-      
-      private function endCombat():void
-      {
-         var dialog:XML = new XML(
-          <dialog>
-            <prompt type="initial" id="1" action="prompt" promptId="2">You've done it!</prompt>
-            <prompt type="normal" id="2" action="end">You got stuff!</prompt>
-         </dialog>
-         );
-         var d:DialogBox = new DialogBox(dialog, null, null, destroy);
-         removeKeyListener();
-         addChild(d);
-      }
-      
-      public function destroy():void
-      {
-trace('removing encounter from stage');
-         Global.game.endEncounter(this);
-      }
-      
-      private function doMemberAction(index:int):void
-      {
-         //all actions done, start new turn
-         if (index > party.length - 1) { 
-            endTurn();
-            return;
-         }
-         
-         var results:Object;
-         if (party[index].target != null && party[index].action != null) {
-debugOut(party[index].character.name + "'s action is: " + party[index].action);
-            switch(party[index].action) {
-               case 'combat':
-                  results = party[index].character.sendAttack(enemies[party[index].target].character);
-                  showCombatAnimation(party[index], function(e:Event):void {
-                     doMemberAction(index + 1);
-                  });
-debugOut(results.message);
-                  break;
-               case 'spell':
-                  results = party[index].character.sendSpell(party[index].spell, enemies[party[index].target].character);
-                  showSpellAnimation(party[index], function():void {
-                     doMemberAction(index + 1);
-                  });
-debugOut(results.message);
-                  break;
-               case 'item':
-                  results = party[index].item.useItem( { target: enemies[party[index].target] } );
-debugOut(results.message);
-                  break;
-               default: break;
-            }
-         }
-         
-         updateCharacter(party[index]);
+		private function selectPreviousTarget():void
+		{
+			var checkedCount:int = 0;
+			var index:int = Math.abs(selectedTarget) - 1;
 
-      }     
+			if(selectedTarget > 0) { //selecting an enemey
+				while (checkedCount < enemies.length) {
+					if (--index < 0) { index = enemies.length - 1; }
+					if (enemies[index].character.getStateName() != "dead") {
+						selectTarget('enemy', index+1);
+						return;
+					}
+					checkedCount++;
+				}
+			} else {					//selecting an ally
+				while (checkedCount < party.length) {
+					if (--index < 0) { index = party.length - 1; }
+					if (party[index].character.getStateName() != "dead") {
+						selectTarget('ally', index+1);
+						return;
+					}
+					checkedCount++;
+				}
+			}
+		}
+      
+		private function selectNextMember():void
+		{
+			menus.changeItem(1);
+		}
+      
+      
+      
+		/************************** TURN STUFF *********************************/
+		private function newTurn():void
+		{
+			debugOut("-------------- new turn --------------");
+			for (var i:int = 0; i < party.length; i++) {
+				party[i].target = null;
+			}
+			menus.switchBox("party");
+			selectNextMember();
+			state = "choosing_member";
+			menus.addKeyListener();
+		}
+      
+		private function startTurn():void
+		{
+			debugOut('startTurn() - actions chosen for all party members, initiating turn');
+			state = "turn";
+
+			partySelector.visible = false;
+			doMemberAction(0);
+		}
+      
+		private function endTurn():void
+		{
+			debugOut('endTurn()');
+			var deadCount:int = 0;
+			for (var i:int = 0; i < enemies.length; i++) {
+				var char:Character = enemies[i].character;
+
+				if(char.conditions[0] && char.conditions[0].isActive()) {
+					char.conditions[0].applyActions();
+				}
+				updateCharacter(enemies[i]);
+
+				trace(char.name+'\'s STATE: '+char.getStateName());
+				if (char.getStateName() == "dead") {
+					if (enemies[i].state != "dead") { 
+						doEnemyDeathAnimation(i);
+						enemies[i].state = "dead"
+					}
+					deadCount++;
+				}
+			}
+
+			if (deadCount >= enemies.length) {
+				debugOut('ALL ENEMIES KILLED - ending combat');
+				endCombat();
+			} else {
+				newTurn();
+			}
+		}
+      
+		private function endCombat():void
+		{
+			var dialog:XML = new XML(
+				<dialog>
+				<prompt type="initial" id="1" action="prompt" promptId="2">You've done it!</prompt>
+				<prompt type="normal" id="2" action="end">You got stuff!</prompt>
+				</dialog>
+			);
+			var d:DialogBox = new DialogBox(dialog, null, null, destroy);
+			removeKeyListener();
+			addChild(d);
+		}
+      
+		public function destroy():void
+		{
+trace('removing encounter from stage');
+			Global.game.endEncounter(this);
+		}
+      
+		private function doMemberAction(index:int):void
+		{
+			//all actions done, start new turn
+			if (index > party.length - 1) { 
+				endTurn();
+				return;
+			}
+
+			var results:Object;
+			if (party[index].target != null && party[index].action != null) {
+				debugOut(party[index].character.name + "'s action is: " + party[index].action);
+				switch(party[index].action) {
+					case 'combat':
+						results = party[index].character.sendAttack(enemies[party[index].target].character);
+						showCombatAnimation(party[index], function(e:Event):void {
+							doMemberAction(index + 1);
+						});
+						debugOut(results.message);
+					break;
+					case 'spell':
+						if(selectedTarget > 0) { //targetting an enemy
+							results = party[index].character.sendSpell(party[index].spell, enemies[party[index].target - 1].character);
+						} else {				 //targetting an ally
+							results = party[index].character.sendSpell(party[index].spell, enemies[Math.abs(party[index].target) - 1].character);
+						}
+						showSpellAnimation(party[index], function():void {
+							doMemberAction(index + 1);
+						});
+						debugOut(results.message);
+					break;
+					case 'item':
+						results = party[index].item.useItem( { target: enemies[party[index].target] } );
+						debugOut(results.message);
+					break;
+					default: break;
+				}
+			}
+
+			updateCharacter(party[index]);
+		}
       
       /************************** KEY LISTENER STUFF ****************************/
       public function addKeyListener(e:Event=null):void
