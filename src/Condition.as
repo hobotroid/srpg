@@ -1,6 +1,7 @@
 package  
 {
    import r1.deval.D;
+   import com.lasko.entity.Character;
    
    public class Condition
    {
@@ -65,7 +66,7 @@ package
 trace('applying action ' + action.@type + ' to ' + parent.name);
             switch(String(action.@type)) {
                case 'change_frame':
-                  parent.setAnimState(action.@value);
+                  parent.anim.setAnimState(action.@value);
                   break;
                default: break;
             }

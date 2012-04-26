@@ -17,10 +17,11 @@
 	import flash.events.*;
 	import mx.accessibility.UIComponentAccProps;
 
-	import ui.DialogBox;
-	import ui.UIBar;
-	import ui.Screen;
-	import util.Utils;
+	import com.lasko.ui.DialogBox;
+	import com.lasko.ui.UIBar;
+	import com.lasko.ui.Screen;
+	import com.lasko.util.Utils;
+	import com.lasko.entity.Character;
    
 	public class Encounter extends TopLevel {
 		private static const COMBATMENU_W:int = 400;
@@ -55,7 +56,7 @@
 		private var enemySelector:Bitmap;
 		private var enemySelectorTimer:Timer = new Timer(ENEMY_SELECTOR_SPEED, 0);
 		private var enemySelectorFrame:int = 0;
-      
+
 		public function Encounter(goodies:Party, baddies:Party) 
 		{
 			var count:int = 0;
@@ -65,8 +66,8 @@
          
 			//set up party array
 			for each(var good:Character in goodies.characters) {
-				good.setAnimState(Global.STATE_COMBAT);
-				good.setState(Global.STATE_COMBAT);0
+				good.anim.setAnimState(Global.STATE_COMBAT);
+				good.setState(Global.STATE_COMBAT);
 				var object:Object = {};
 				object.character = good;
 				object.bitmap = new Bitmap(new BitmapData(good.width, good.height));
@@ -82,7 +83,7 @@
 			//set up enemies array
 			count = 0;
 			for each(var bad:Character in baddies.characters) {
-				bad.setAnimState(Global.STATE_COMBAT);
+				bad.anim.setAnimState(Global.STATE_COMBAT);
 				object = {};
 				object.character = bad;
 				object.bitmap = new Bitmap(new BitmapData(bad.width, bad.height));
@@ -123,18 +124,6 @@
 
 			//Background
 			background = new BackgroundClass();
-         
-         
-         
-         
-         
-         
-         
-         
-         
-         
-         
-         
 			Utils.resizeMe(background, Global.gameWidth, Global.gameHeight);
 			addChild(background);
          
@@ -179,15 +168,16 @@
 		 
 			//new bottom menu
 			var heads:MovieClip = new MovieClip();
-			var count:int = 0, HEAD_WIDTH:int = 90, HEAD_HEIGHT:int = 90, BOTTOM_BAR_WIDTH:int = width - 20, 
+			var HEAD_WIDTH:int = 90, HEAD_HEIGHT:int = 90, BOTTOM_BAR_WIDTH:int = width - 20, 
 				BARS_HEIGHT:int = 25, HEAD_PADDING:int = 15, BOTTOM_Y:int = height-135;
-			menus.addBox({x:10, y:BOTTOM_Y, width:BOTTOM_BAR_WIDTH, height:128, label:"party", layout:"free", columns:0, color:0xffffff});
+			menus.addBox( { x:10, y:BOTTOM_Y, width:BOTTOM_BAR_WIDTH, height:128, label:"party", layout:"free", columns:0, color:0xffffff } );
+			count = 0;
 			for each(member in party) {
 				var headClip:MovieClip = new MovieClip();
 				
 				//faces
 				var headBmp:Bitmap = new Bitmap(new BitmapData(member.character.width, member.character.height));
-				var currentFrame:int = member.character.getCurrentFrame();
+				var currentFrame:int = member.character.anim.getCurrentFrame();
 				headBmp.bitmapData.copyPixels(
 					Global.tileset48, new Rectangle((currentFrame % 17) * 48, (int(currentFrame / 17)) * 48, member.character.width, member.character.height), new Point(0, 0)
 				);
@@ -250,12 +240,12 @@
 			debugOut(mouseX + 'x' + mouseY); 
 			});*/
 		}
-      
+
 		private function init(e:Event):void {
 			stage.focus = this;
 			newTurn();
 		}
-      
+
 		private function partySelected(object:Object):void
 		{
 			var partyBox:Object = menus.getBox("party");
@@ -271,46 +261,41 @@
 			state = "choosing_actions";
 			menus.switchBox("actions");
 		}
-      
-	private function enemySelected(params:Object=null):void {
-		party[selectedMember].target = selectedTarget;
 
-		removeKeyListener();
-		menus.removeBox("actions");
-		menus.removeBox("science");
-		menus.removeBox("enemies");
-		menus.switchBox("party");
+		private function targetSelected(params:Object=null):void {
+			party[selectedMember].target = selectedTarget;
 
-		if(selectedTarget > 0) {	//selected an enemy
-			debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targets: ' + enemies[selectedTarget-1].character.name + ' (' + selectedTarget + ')');
-		} else {				   	//selected an ally
-			debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targets: ' + party[Math.abs(selectedTarget)-1].character.name + ' (' + selectedTarget + ')');
-		}
-		selectTarget('enemy', -1);
+			removeKeyListener();
+			menus.removeBox("actions");
+			menus.removeBox("science");
+			menus.removeBox("enemies");
+			menus.switchBox("party");
 
-		//if all party members have chosen an action + target, do turn
-		var actionCount:int = 0;
-		for (var i:int = 0; i < party.length; i++) {
-			if (party[i].target != null) { 
-				actionCount++; 
-			} else {
-				selectNextMember();
-				break;
+			if(selectedTarget > 0) {	//selected an enemy
+				debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targets: ' + enemies[selectedTarget-1].character.name + ' (' + selectedTarget + ')');
+			} else {				   	//selected an ally
+				debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targets: ' + party[Math.abs(selectedTarget)-1].character.name + ' (' + selectedTarget + ')');
 			}
-		}
-		if (actionCount == party.length) {
-			startTurn();
-			return;
+			selectTarget('enemy', -1);
+
+			//if all party members have chosen an action + target, do turn
+			var actionCount:int = 0;
+			for (var i:int = 0; i < party.length; i++) {
+				if (party[i].target != null) { 
+					actionCount++; 
+				} else {
+					selectNextMember();
+					break;
+				}
+			}
+			if (actionCount == party.length) {
+				startTurn();
+				return;
+			}
+
+			menus.addKeyListener();
 		}
 
-		menus.addKeyListener();
-	}
-      
-      
-      
-      
-      
-      
 		/************ MENU OPTIONS WHEN SELECTING A PARTY MEMBER ************/
 		private function attackSelected(object:Object):void 
 		{
@@ -328,9 +313,9 @@
 				}
 			});
 			for each(var bad:Object in enemies) {
-				menus.addMenuText("enemies", {label:bad.character.name, callback:enemySelected});
+				menus.addMenuText("enemies", {label:bad.character.name, callback:targetSelected, enabled:bad.state != "dead"});
 			}
-			menus.addMenuChangeCallback("enemies", function(index:int) {
+			menus.addMenuChangeCallback("enemies", function(index:int):void {
 				selectTarget('enemy', index+1);
 			});
 			menus.switchBox("enemies");
@@ -406,7 +391,10 @@
 		/********************** FUNCTIONS FOR CHOOSING AN ENEMY / PARTY MEMBER ***************************/
 		private function selectTarget(type:String, index:int):void
 		{
-			if (index == -1) return;
+			if (index == -1) {
+				pointer.visible = false;
+				return;
+			}
 			
 			if(type == 'enemy') {	//targetting enemy
 				pointer.x = badClip.x + enemies[index-1].sprite.x;
@@ -424,7 +412,7 @@
 		private function selectFirstTarget():void
 		{
 			for (var i:int = 0; i < enemies.length; i++) {
-				if (enemies[i].character.getStateName() != "dead") {
+				if (enemies[i].character.getStateName() != Global.STATE_DEAD) {
 					selectTarget('enemy', i+1);
 					return;
 				}
@@ -439,7 +427,7 @@
 			if(selectedTarget > 0) { //selecting an enemey
 				while (checkedCount < enemies.length) {
 					if (++index > enemies.length - 1) { index = 0; }
-					if (enemies[index].character.getStateName() != "dead") {
+					if (enemies[index].character.getStateName() != Global.STATE_DEAD) {
 						selectTarget('enemy', index+1);
 						return;
 					}
@@ -448,7 +436,7 @@
 			} else {					//selecting an ally
 				while (checkedCount < party.length) {
 					if (++index > party.length - 1) { index = 0; }
-					if (party[index].character.getStateName() != "dead") {
+					if (party[index].character.getStateName() != Global.STATE_DEAD) {
 						selectTarget('ally', index+1);
 						return;
 					}
@@ -465,7 +453,7 @@
 			if(selectedTarget > 0) { //selecting an enemey
 				while (checkedCount < enemies.length) {
 					if (--index < 0) { index = enemies.length - 1; }
-					if (enemies[index].character.getStateName() != "dead") {
+					if (enemies[index].character.getStateName() != Global.STATE_DEAD) {
 						selectTarget('enemy', index+1);
 						return;
 					}
@@ -474,7 +462,7 @@
 			} else {					//selecting an ally
 				while (checkedCount < party.length) {
 					if (--index < 0) { index = party.length - 1; }
-					if (party[index].character.getStateName() != "dead") {
+					if (party[index].character.getStateName() != Global.STATE_DEAD) {
 						selectTarget('ally', index+1);
 						return;
 					}
@@ -510,6 +498,8 @@
 
 			partySelector.visible = false;
 			doMemberAction(0);
+			
+			doEnemyAction(0);
 		}
       
 		private function endTurn():void
@@ -525,7 +515,7 @@
 				updateCharacter(enemies[i]);
 
 				trace(char.name+'\'s STATE: '+char.getStateName());
-				if (char.getStateName() == "dead") {
+				if (char.getStateName() == Global.STATE_DEAD) {
 					if (enemies[i].state != "dead") { 
 						doEnemyDeathAnimation(i);
 						enemies[i].state = "dead"
@@ -574,17 +564,21 @@ trace('removing encounter from stage');
 				debugOut(party[index].character.name + "'s action is: " + party[index].action);
 				switch(party[index].action) {
 					case 'combat':
-						results = party[index].character.sendAttack(enemies[party[index].target].character);
+						if(party[index].target > 0) { //targetting an enemy
+							results = party[index].character.combat.sendAttack(enemies[party[index].target - 1].character);
+						} else {				 //targetting an ally
+							results = party[index].character.combat.sendAttack(party[Math.abs(party[index].target) - 1].character);
+						}
 						showCombatAnimation(party[index], function(e:Event):void {
 							doMemberAction(index + 1);
 						});
 						debugOut(results.message);
 					break;
 					case 'spell':
-						if(selectedTarget > 0) { //targetting an enemy
-							results = party[index].character.sendSpell(party[index].spell, enemies[party[index].target - 1].character);
+						if(party[index].target > 0) { //targetting an enemy
+							results = party[index].character.combat.sendSpell(party[index].spell, enemies[party[index].target - 1].character);
 						} else {				 //targetting an ally
-							results = party[index].character.sendSpell(party[index].spell, enemies[Math.abs(party[index].target) - 1].character);
+							results = party[index].character.combat.sendSpell(party[index].spell, party[Math.abs(party[index].target) - 1].character);
 						}
 						showSpellAnimation(party[index], function():void {
 							doMemberAction(index + 1);
@@ -600,6 +594,30 @@ trace('removing encounter from stage');
 			}
 
 			updateCharacter(party[index]);
+		}
+		
+		private function doEnemyAction(index:int):void
+		{
+			var results:Object;
+			if (enemies[index].target != null && enemies[index].action != null) {
+					debugOut(enemies[index].character.name + "'s action is: " + enemies[index].action);
+					switch(enemies[index].action) {
+						case 'combat':
+							if(enemies[index].target > 0) { //targetting an enemy
+								results = enemies[index].character.combat.sendAttack(enemies[enemies[index].target - 1].character);
+							} else {				 	  //targetting an ally
+								results = enemies[index].character.combat.sendAttack(party[Math.abs(enemies[index].target) - 1].character);
+							}
+							showCombatAnimation(party[index], function(e:Event):void {
+								doEnemyAction(index + 1);
+							});
+							debugOut(results.message);
+						break;
+					default: break;
+				}
+			}
+			
+			updateCharacter(enemies[index]);
 		}
       
       /************************** KEY LISTENER STUFF ****************************/
@@ -635,7 +653,7 @@ trace('removing encounter from stage');
 					}
 
 					if (e.keyCode == 88) { //X
-						enemySelected();
+						targetSelected();
 					} else if(e.keyCode == 90) { //Z
 						selectTarget('enemy', 1);
 						if (party[selectedMember].action == "spell") {
@@ -665,24 +683,25 @@ trace('removing encounter from stage');
          if(!partySelectorTimer.running) { partySelectorTimer.start(); }
       }
       
-      /***************** GRAPHICS STUFF ********************/
-      private function updateCharacter(object:Object):void
-      {
-         if (object.state == "dead") { return; }
-         
-         var currentFrame:int = object.character.getCurrentFrame();
-         object.bitmap.bitmapData.copyPixels(
-            Global.tileset48, 
-            new Rectangle((currentFrame % 17) * 48, (int(currentFrame/17)) * 48, object.bitmap.width, object.bitmap.height),
-            new Point(0, 0)
-         );
-         if (!object.sprite.contains(object.bitmap)) { object.sprite.addChild(object.bitmap); }
-      }
+		/***************** GRAPHICS STUFF ********************/
+		private function updateCharacter(object:Object):void
+		{
+			if (object.state == "dead") { return; }
+
+			var currentFrame:int = object.character.anim.getCurrentFrame();
+			object.bitmap.bitmapData.copyPixels(
+				Global.tileset48, 
+				new Rectangle((currentFrame % 17) * 48, (int(currentFrame/17)) * 48, object.bitmap.width, object.bitmap.height),
+				new Point(0, 0)
+			);
+			if (!object.sprite.contains(object.bitmap)) { object.sprite.addChild(object.bitmap); }
+		}
       
 		private function showCombatAnimation(character:Object, callback:Function):void
 		{
 			showCombatAttack(character, function(e:Event):void { 
-				showCombatHit(enemies[e.target.params.character.target], function(e:Event):void { 
+				var targetted:Object = e.target.params.character.target > 0 ? enemies[e.target.params.character.target - 1] : party[Math.abs(e.target.params.character.target) - 1];
+				showCombatHit(targetted, function(e:Event):void { 
 					//move char back to original position, then callback
 					TweenMax.to(character.sprite, .5, { x:character.original_x, ease:Expo.easeInOut, onComplete: callback, onCompleteParams: [e]}); 
 				});
@@ -697,64 +716,62 @@ trace('removing encounter from stage');
 			});
 		}
       
-      //shows "pow" graphic on character that got hit by melee
-      private function showCombatHit(character:Object, callback:Function):void
-      {
-         TweenMax.to(character.bitmap,0.1,{repeat:2, y:1+Math.random()*4, x:1+Math.random()*4, delay:0.1, ease:Expo.easeInOut});
-         TweenMax.to(character.bitmap, 0.1, { y:Math.random() * 4, x:Math.random() * 4, delay:0.3,/* onComplete:onFinishTween,*/ ease:Expo.easeInOut } );
+		//shows "pow" graphic on character that got hit by melee
+		private function showCombatHit(character:Object, callback:Function):void
+		{
+			TweenMax.to(character.bitmap,0.1,{repeat:2, y:1+Math.random()*4, x:1+Math.random()*4, delay:0.1, ease:Expo.easeInOut});
+			TweenMax.to(character.bitmap, 0.1, { y:Math.random() * 4, x:Math.random() * 4, delay:0.3,/* onComplete:onFinishTween,*/ ease:Expo.easeInOut } );
 
-         var hitBitmap:Bitmap = new Bitmap(new BitmapData(48, 48));
-         hitBitmap.bitmapData.copyPixels(
-            Global.tileset48, 
-            new Rectangle((340 % 17) * 48, (int(340/17)) * 48, character.bitmap.width, character.bitmap.height),
-            new Point(0, 0)
-         );
-         hitBitmap.x = character.sprite.width / 2 - 48 / 2;
-         hitBitmap.y = character.sprite.height / 2 - 48 / 2;
-         character.sprite.addChild(hitBitmap);
-         hitBitmap.name = "hitBitmap";
-         
-         var hitTimer:Timer = new MyTimer(300, 1);
-         hitTimer.addEventListener(TimerEvent.TIMER, function(e:Event):void {
-            character.sprite.removeChild(character.sprite.getChildByName("hitBitmap"));
-         });
-         hitTimer.addEventListener(TimerEvent.TIMER_COMPLETE, callback);
-         hitTimer.start();
-      }
+			var hitBitmap:Bitmap = new Bitmap(new BitmapData(48, 48));
+			hitBitmap.bitmapData.copyPixels(
+				Global.tileset48, 
+				new Rectangle((340 % 17) * 48, (int(340/17)) * 48, character.bitmap.width, character.bitmap.height),
+				new Point(0, 0)
+			);
+			hitBitmap.x = character.sprite.width / 2 - 48 / 2;
+			hitBitmap.y = character.sprite.height / 2 - 48 / 2;
+			character.sprite.addChild(hitBitmap);
+			hitBitmap.name = "hitBitmap";
+
+			var hitTimer:Timer = new MyTimer(300, 1);
+			hitTimer.addEventListener(TimerEvent.TIMER, function(e:Event):void {
+				character.sprite.removeChild(character.sprite.getChildByName("hitBitmap"));
+			});
+			hitTimer.addEventListener(TimerEvent.TIMER_COMPLETE, callback);
+			hitTimer.start();
+		}
       
-      //swings a weapon behind a character (or do whatever frames the weapon specifies)
-      private function showCombatAttack(character:Object, callback:Function):void
-      {
-         var weapon:Item = character.character.getEquippedWeapon();
-         character.animation = {
-            item: weapon,
-            frames: weapon.getAttackFrames()
-         }
-         character.state = "attacking";
+		//swings a weapon behind a character (or do whatever frames the weapon specifies)
+		private function showCombatAttack(character:Object, callback:Function):void
+		{
+			var weapon:Item = character.character.combat.getEquippedWeapon();
+			character.animation = {
+				item: weapon,
+				frames: weapon.getAttackFrames()
+			}
+			character.state = "attacking";
 
-         TweenMax.to(character.sprite, .5, { 
-               x:x - 50, ease:Expo.easeInOut, onComplete: function():void {
-                  var attackAnimTimer:MyTimer = new MyTimer(100, character.animation.frames.length+1, {character:character});
-                  attackAnimTimer.addEventListener(TimerEvent.TIMER, attackTimerFired);
-                  attackAnimTimer.addEventListener(TimerEvent.TIMER_COMPLETE, callback);
-                  attackAnimTimer.start();
-               }
-            } 
-         );
-      }
+			TweenMax.to(character.sprite, .5, { 
+				x:x - 50, ease:Expo.easeInOut, onComplete: function():void {
+					var attackAnimTimer:MyTimer = new MyTimer(100, character.animation.frames.length+1, {character:character});
+					attackAnimTimer.addEventListener(TimerEvent.TIMER, attackTimerFired);
+					attackAnimTimer.addEventListener(TimerEvent.TIMER_COMPLETE, callback);
+					attackAnimTimer.start();
+				}
+			});
+		}
       
-      //character casts a spell
-      private function showSpellCast(character:Object, callback:Function):void
-      {
-         character.state = "casting";
+		//character casts a spell
+		private function showSpellCast(character:Object, callback:Function):void
+		{
+			character.state = "casting";
 
-         TweenMax.to(character.sprite, .5, { 
-               x:x - 50, ease:Expo.easeInOut, onComplete: function():void {
-                  callback();
-               }
-            } 
-         );
-      }
+			TweenMax.to(character.sprite, .5, { 
+				x:x - 50, ease:Expo.easeInOut, onComplete: function():void {
+					callback();
+				}
+			});
+		}
       
       //called when weapon swing animation is updated
       private function attackTimerFired(e:Event):void
@@ -889,30 +906,25 @@ debugOut('doing enemy death for enemy ' + index);
          if (frame > 5) {
             goodClip.setChildIndex(partySelector, menus.getSelectedIndex("party"));
          } else {
-           goodClip.setChildIndex(partySelector, menus.getSelectedIndex("party")+1);
+			goodClip.setChildIndex(partySelector, menus.getSelectedIndex("party")+1);
          }
       }
       
-      private function enemySelectorTimerFired(e:Event):void
-      {
-         if (++enemySelectorFrame > Global.game.pointer.length - 1) { enemySelectorFrame = 0; }
-         enemySelector.bitmapData.copyPixels(
-            Global.game.pointer[enemySelectorFrame].bitmapData, 
-            new Rectangle(0, 0, Global.game.pointer[enemySelectorFrame].width, Global.game.pointer[enemySelectorFrame].height),
-            new Point(0, 0)
-         );
-      }
+		private function enemySelectorTimerFired(e:Event):void
+		{
+			if (++enemySelectorFrame > Global.game.pointer.length - 1) { enemySelectorFrame = 0; }
+			enemySelector.bitmapData.copyPixels(
+				Global.game.pointer[enemySelectorFrame].bitmapData, 
+				new Rectangle(0, 0, Global.game.pointer[enemySelectorFrame].width, Global.game.pointer[enemySelectorFrame].height),
+				new Point(0, 0)
+			);
+		}
       
-      
-      
-      
-      
-      
-      private function debugOut(value:String):void
-      {
-         if (debugField.text.length) { debugField.appendText("\n"); }
-         debugField.appendText(value);
-         debugField.scrollV = debugField.textHeight;
-      }
+		private function debugOut(value:String):void
+		{
+			if (debugField.text.length) { debugField.appendText("\n"); }
+			debugField.appendText(value);
+			debugField.scrollV = debugField.textHeight;
+		}
    }
 }

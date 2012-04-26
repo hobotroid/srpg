@@ -30,8 +30,9 @@
 	import com.greensock.plugins.*;
 	import com.greensock.easing.*;
 	
-	import ui.*;
-    import util.*;
+	import com.lasko.ui.*;
+    import com.lasko.util.*;
+	import com.lasko.entity.Character;
 	
 	public class Test extends TopLevel
 	{
@@ -277,7 +278,8 @@
 			var spriteNum:int;
 			var tile:Object;
             var chars:Array;
-			var charsDrawn:Object = {};
+			var charsDrawn:Object = { };
+			var tileSet:Object;
 
 			//needs to be optimized to not draw every time. maybe?
 			if (Global.currentBackground) {
@@ -307,15 +309,22 @@
                         
                                                 
                         //is there a tile/object to draw at this location?
-						if ((tile = maps[activeMap].getTileAt(l, x, y))) { 
-						spriteNum = tile.spriteNum - 1;
-                        //trace(spriteNum);
-                        if (spriteNum >= 3333) {
-                            spriteNum -= 3332;
-                            canvas.copyPixels(Global.tileset48, new Rectangle((spriteNum % maps[activeMap].tileSets[48].tilesPerRow) * 48, (int(spriteNum / maps[activeMap].tileSets[48].tilesPerRow)) * 48, 48, 48), new Point(tile.x - mapScrollX, tile.y - mapScrollY));
-                        } else {
-                            canvas.copyPixels(Global.tileset24, new Rectangle((spriteNum % maps[activeMap].tileSets[24].tilesPerRow) * maps[activeMap].tileWidth, (int(spriteNum / maps[activeMap].tileSets[24].tilesPerRow)) * maps[activeMap].tileWidth, maps[activeMap].tileWidth, maps[activeMap].tileHeight), new Point(tile.x - mapScrollX, tile.y - mapScrollY));
-                        }
+						if ((tile = maps[activeMap].getTileAt(l, x, y))) {
+							tileSet = maps[activeMap].findTileSet(tile.spriteNum);
+							if(tileSet) {
+								spriteNum = tile.spriteNum - tileSet.index - 1;
+								/*if (spriteNum >= 3333) {
+									spriteNum -= 3332;
+									canvas.copyPixels(Global.tileset48, new Rectangle((spriteNum % maps[activeMap].tileSets[48].tilesPerRow) * 48, (int(spriteNum / maps[activeMap].tileSets[48].tilesPerRow)) * 48, 48, 48), new Point(tile.x - mapScrollX, tile.y - mapScrollY));
+								} else {
+									canvas.copyPixels(Global.tileset24, new Rectangle((spriteNum % maps[activeMap].tileSets[24].tilesPerRow) * maps[activeMap].tileWidth, (int(spriteNum / maps[activeMap].tileSets[24].tilesPerRow)) * maps[activeMap].tileWidth, maps[activeMap].tileWidth, maps[activeMap].tileHeight), new Point(tile.x - mapScrollX, tile.y - mapScrollY));
+								}*/
+								canvas.copyPixels(
+									Global['tileset' + tileSet.width], 
+									new Rectangle((spriteNum % tileSet.tilesPerRow) * tileSet.width, (int(spriteNum / tileSet.tilesPerRow)) * tileSet.height, tileSet.width, tileSet.height), 
+									new Point(tile.x - mapScrollX, tile.y - mapScrollY)
+								);
+							}
                         }
                         
                         //are there any characters to draw at this location?
@@ -324,7 +333,7 @@
                             for each(var char:Character in chars) {
 								if (charsDrawn[char.id]) { continue; }
                                 char.tick();
-                                spriteNum = char.getCurrentFrame();
+                                spriteNum = char.anim.getCurrentFrame();
                                 canvas.copyPixels(Global.tileset48, new Rectangle((spriteNum % 17) * 48, (int(spriteNum / 17)) * 48, 48, 48), new Point(char.x - mapScrollX, char.y - mapScrollY)); 
 								charsDrawn[char.id] = true;
                             }
@@ -771,7 +780,7 @@
             if(maps[activeMap].playerLayers[drawParams.l]) {
                 var chars:Array = maps[activeMap].getCharactersAt(drawParams.l, drawParams.x, drawParams.y);
                 for each(var char:Character in chars) {
-                    spriteNum = char.getCurrentFrame();
+                    spriteNum = char.anim.getCurrentFrame();
                     canvas.copyPixels(Global.tileset48, new Rectangle((spriteNum % 17) * 48, (int(spriteNum / 17)) * 48, 48, 48), new Point(char.x - mapScrollX, char.y - mapScrollY));
                     char.tick();
                 }

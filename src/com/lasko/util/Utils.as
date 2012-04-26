@@ -1,4 +1,4 @@
-﻿package util {
+﻿package com.lasko.util {
    import flash.automation.ActionGenerator;
    import flash.display.BitmapData;
    import flash.display.MovieClip;
@@ -29,6 +29,11 @@
 		public static function randRange(low:int, high:int):int
 		{
 			return(Math.round(low + Math.random()*(high-low)));
+		}
+		
+		public static function sign(num:int):int
+		{
+			return (num > 0) ? 1 : ((num < 0) ? -1 : 0);
 		}
 
 		public static function clone(source:Object):*

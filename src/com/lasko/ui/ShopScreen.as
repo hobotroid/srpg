@@ -1,4 +1,5 @@
-﻿package ui {
+﻿package com.lasko.ui 
+{
    import flash.text.TextField;
    import flash.text.TextFormat;
    import flash.display.MovieClip;

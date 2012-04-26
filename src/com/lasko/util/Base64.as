@@ -1,4 +1,4 @@
-package util {   
+package com.lasko.util {   
     import flash.utils.ByteArray;   
     public class Base64 {   
         private static  const encodeChars:Array =    

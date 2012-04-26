@@ -80,7 +80,7 @@ trace('MapObject::useItem(), type='+type);
                      var lootTokens:Array = String(params.contents).split(" ");
                      spriteNum = 58; // change to open box sprite
                      type = Global.TILE_TYPE_DEAD_BOX;
-               Global.game.drawMap();
+					 Global.game.drawMap();
                      switch(lootTokens[0]) {
                         case "money":
                            var gained:int = lootTokens[1] == "random" ? Global.getRandomMoney() : lootTokens[1];

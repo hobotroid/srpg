@@ -4,7 +4,7 @@
 * @version 0.1
 */
 
-package util {
+package com.lasko.util {
 	import flash.display.MovieClip;
 	import flash.events.*;
 	import flash.geom.Point;
@@ -27,8 +27,7 @@ package util {
 		public var canvasBD:BitmapData;
 		public var messagePoint:Point;
 		public var messageRect:Rectangle;
-						
-		
+
 		public function FrameTimer(xval:int,yval:int,canvasval:BitmapData):void {
 			x=xval;
 			y=yval;
