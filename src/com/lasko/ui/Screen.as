@@ -1,4 +1,5 @@
-package ui {
+package com.lasko.ui 
+{
 	import flash.display.MovieClip;
 	import flash.display.Shape;
 	import flash.display.Bitmap;
@@ -8,6 +9,7 @@ package ui {
 	import flash.display.JointStyle;
 	import flash.geom.ColorTransform;
 	import flash.geom.Matrix;
+	import flash.globalization.Collator;
 	import flash.text.TextField;
 	import flash.geom.Rectangle;
 	import flash.geom.ColorTransform;
@@ -16,35 +18,35 @@ package ui {
 	import flash.utils.Timer;
 	import flash.ui.Keyboard;
    
-	import util.Utils;
+	import com.lasko.util.Utils;
 
 	public class Screen extends TopLevel
 	{
-      public static const WIDTH:int = 640;
-      public static const HEIGHT:int = 480;
-	  public static const DEFAULT_BOX_COLOR:uint = 0x5fa7cd;
+		public static const WIDTH:int = 640;
+		public static const HEIGHT:int = 480;
+		public static const DEFAULT_BOX_COLOR:uint = 0x5fa7cd;
+
+		private var boxes:Array = new Array();
+		private var currentBox:String = "";
+
+		private var pointerTimer:Timer;
    
-      private var boxes:Array = new Array();
-      private var currentBox:String = "";
-      
-      private var pointerTimer:Timer;
-   
-      public function Screen(useBackground:Boolean=false)
-      {
-         var bg:Shape = new Shape();
-         bg.graphics.beginFill(0x000000, useBackground ? .75 : 0);
-         bg.graphics.lineStyle();
-         bg.graphics.drawRect(0, 0, WIDTH, HEIGHT);
-         bg.graphics.endFill();
-         addChild(bg);
-         
-         pointerTimer = new Timer(160, 0);
-         pointerTimer.addEventListener(TimerEvent.TIMER, updatePointer);
-         pointerTimer.start();
-         
-         this.mouseEnabled = false;
-      }
-      
+		public function Screen(useBackground:Boolean=false)
+		{
+			var bg:Shape = new Shape();
+			bg.graphics.beginFill(0x000000, useBackground ? .75 : 0);
+			bg.graphics.lineStyle();
+			bg.graphics.drawRect(0, 0, WIDTH, HEIGHT);
+			bg.graphics.endFill();
+			addChild(bg);
+
+			pointerTimer = new Timer(160, 0);
+			pointerTimer.addEventListener(TimerEvent.TIMER, updatePointer);
+			pointerTimer.start();
+
+			this.mouseEnabled = false;
+		}
+
 		public function addBox(options:Object):void
 		{
 			var defaults:Object = { x:0, y:0, width:50, height:50, label:null, layout:"vertical", columns:0, color:DEFAULT_BOX_COLOR, defaultCallback:null, defaultExitCallback:null };
@@ -97,7 +99,7 @@ package ui {
 				"textItems": [],
 				"pointer": pointer,
 				"pointerFrame": 0,
-				"selectedItem": 0,
+				"selectedIndex": 0,
 				"clip": clip,
 				"scrollPane": scrollPane,
 				"layout": options.layout,
@@ -117,109 +119,126 @@ package ui {
 			addChild(clip);
 		}
       
-      private function updatePointer(e:Event):void
-      {
-         if (currentBox && currentBox.length) {
-            if (++boxes[currentBox].pointerFrame > Global.game.pointer.length - 1) { boxes[currentBox].pointerFrame = 0; }
-            boxes[currentBox].pointer.bitmapData.copyPixels(
-               Global.game.pointer[boxes[currentBox].pointerFrame].bitmapData, 
-               new Rectangle(0, 0, Global.game.pointer[boxes[currentBox].pointerFrame].width, Global.game.pointer[boxes[currentBox].pointerFrame].height),
-               new Point(0, 0)
-            );
-         }
-      }
+		private function updatePointer(e:Event):void
+		{
+			if (currentBox && currentBox.length) {
+				if (++boxes[currentBox].pointerFrame > Global.game.pointer.length - 1) { boxes[currentBox].pointerFrame = 0; }
+				boxes[currentBox].pointer.bitmapData.copyPixels(
+					Global.game.pointer[boxes[currentBox].pointerFrame].bitmapData, 
+					new Rectangle(0, 0, Global.game.pointer[boxes[currentBox].pointerFrame].width, Global.game.pointer[boxes[currentBox].pointerFrame].height),
+					new Point(0, 0)
+				);
+			}
+		}
       
-      //adds static box text
-      public function addBoxText(destination:String, label:String):void
-      {
-         var tf:TextField = Global.makeText(label);
-         var item:Object = {"element":tf};
-         tf.x = 0;
-         tf.y = 0;
-         
-         boxes[destination].textItems.push(item);
-         boxes[destination].scrollPane.addChild(tf);
-      }
+		//adds static box text
+		public function addBoxText(destination:String, label:String):void
+		{
+			var tf:TextField = Global.makeText(label);
+			var item:Object = {"element":tf};
+			tf.x = 0;
+			tf.y = 0;
+
+			boxes[destination].textItems.push(item);
+			boxes[destination].scrollPane.addChild(tf);
+		}
       
-      //add a menu item that's not text
-      public function addMenuItem(destination:String, clip:MovieClip, options:Object=null):void
-      {
-		 var box:Object = boxes[destination];
-		 var defaults:Object = { callback:null, callbackParams: null, exitCallback:null, exitCallbackParams: null, x: null, y: null };
-		 options = Utils.mergeObjects(defaults, options);
-         var item:Object = {"element":clip, "callback":options.callback, "exitCallback":options.exitCallback, "callbackParams": options.callbackParams, "exitCallbackParams": options.exitCallbackParams};
-         
-         var previousElement:MovieClip = box.menuItems.length ? box.menuItems[box.menuItems.length - 1].element : null;
-         
-         switch(box.layout) {
-            case "vertical":
-               clip.x = 0;
-               if(!previousElement) {
-                  clip.y = 0;
-               } else {
-                  clip.y = previousElement.y + previousElement.height + box.itemPadding;
-               }
-               break;
-            case "columns":
-               var destColumn:int = box.menuItems.length % box.columns;
-               clip.x = destColumn * box.scrollPane.width / box.columns;
-               clip.y = Math.floor(box.menuItems.length / box.columns) * clip.height;
-               break;
-			case "free":
-				clip.x = options.x;
-				clip.y = options.y;
+		//add a menu item that's not text
+		public function addMenuItem(destination:String, clip:MovieClip, options:Object=null):void
+		{
+			var defaults:Object = { callback:null, callbackParams: null, exitCallback:null, exitCallbackParams: null, x: null, y: null, enabled: true };
+			options = Utils.mergeObjects(defaults, options);
+			
+			var box:Object = boxes[destination];
+			var item:Object = {"element":clip, "callback":options.callback, "exitCallback":options.exitCallback, "callbackParams": options.callbackParams, "exitCallbackParams": options.exitCallbackParams, "enabled":options.enabled};
+
+			var previousElement:MovieClip = box.menuItems.length ? box.menuItems[box.menuItems.length - 1].element : null;
+
+			switch(box.layout) {
+				case "vertical":
+				clip.x = 0;
+				if(!previousElement) {
+					clip.y = 0;
+				} else {
+					clip.y = previousElement.y + previousElement.height + box.itemPadding;
+				}
 				break;
-            default: break;
-         }
-		 
-         box.menuItems.push(item);
-         box.scrollPane.addChild(clip);
-      }
+				case "columns":
+					var destColumn:int = box.menuItems.length % box.columns;
+					clip.x = destColumn * box.scrollPane.width / box.columns;
+					clip.y = Math.floor(box.menuItems.length / box.columns) * clip.height;
+				break;
+				case "free":
+					clip.x = options.x;
+					clip.y = options.y;
+				break;
+				default: break;
+			}
+
+			item.index = box.menuItems.length;
+			box.menuItems.push(item);
+			box.scrollPane.addChild(clip);
+		}
       
-      //add a menu item that's text
-      public function addMenuText(destination:String, options:Object):void 
-      {
-		 var defaults:Object = { label:null, callback:null, callbackParams:null, exitCallback:null, exitCallbackParams:null, changeCallback:null };
-		 options = Utils.mergeObjects(defaults, options);
-		 
-         var tf:TextField = Global.makeText(options.label);
-         var item:Object = { "element":tf, "callback":options.callback, "exitCallback":options.exitCallback, "callbackParams": options.callbackParams, "exitCallbackParams": options.exitCallbackParams, "changeCallback":options.changeCallback };
-         var box:Object = boxes[destination];
-         var previousElement:TextField = box.menuItems.length ? box.menuItems[box.menuItems.length-1].element : null;
-         
-         switch(box.layout) {
-            case "vertical":
-               tf.x = 0;
-               if(box.textItems.length) { tf.x += 20; }
-               if(!previousElement) {
-                  tf.y = 0;
-                  for each(var itm:Object in box.textItems) {
-                     tf.y += itm.element.textHeight + 20;
-                  }
-               } else {
-                  tf.y = previousElement.y + previousElement.height + 0;//box.itemPadding;
-               }
-               break;
-            case "horizontal":
-               if(!previousElement) {
-                  tf.x = 0;
-               } else {
-                  tf.x = previousElement.x + previousElement.width + box.itemPadding;
-               }
-               tf.y = 0;
-               break;
-            case "columns":
-               var destColumn:int = box.menuItems.length % box.columns;
-               tf.x = destColumn * box.scrollPane.width / box.columns;
-               tf.y = Math.floor(box.menuItems.length / box.columns) * tf.height;
-               break;
-            default: break;
-         }
-         
-         box.menuItems.push(item);
-         box.scrollPane.addChild(tf);
-      }
-      
+		//add a menu item that's text
+		public function addMenuText(destination:String, options:Object):void 
+		{
+			var defaults:Object = { label:null, callback:null, callbackParams:null, exitCallback:null, exitCallbackParams:null, changeCallback:null, enabled:true };
+			options = Utils.mergeObjects(defaults, options);
+
+			var tf:TextField = Global.makeText(options.label);
+			var item:Object = { "element":tf, "callback":options.callback, "exitCallback":options.exitCallback, "callbackParams": options.callbackParams, "exitCallbackParams": options.exitCallbackParams, "changeCallback":options.changeCallback, "enabled":options.enabled };
+			var box:Object = boxes[destination];
+			var previousElement:TextField = box.menuItems.length ? box.menuItems[box.menuItems.length-1].element : null;
+
+			if(!item.enabled) {
+				Global.disableText(tf);
+			}
+
+			switch(box.layout) {
+				case "vertical":
+					tf.x = 0;
+					if(box.textItems.length) { tf.x += 20; }
+					if(!previousElement) {
+						tf.y = 0;
+						for each(var itm:Object in box.textItems) {
+							tf.y += itm.element.textHeight + 20;
+						}
+					} else {
+						tf.y = previousElement.y + previousElement.height + 0;//box.itemPadding;
+					}
+				break;
+				case "horizontal":
+					if(!previousElement) {
+						tf.x = 0;
+					} else {
+						tf.x = previousElement.x + previousElement.width + box.itemPadding;
+					}
+					tf.y = 0;
+				break;
+				case "columns":
+					var destColumn:int = box.menuItems.length % box.columns;
+					tf.x = destColumn * box.scrollPane.width / box.columns;
+					tf.y = Math.floor(box.menuItems.length / box.columns) * tf.height;
+				break;
+				default: break;
+			}
+
+			item.index = box.menuItems.length;
+			box.menuItems.push(item);
+			box.scrollPane.addChild(tf);
+		}
+
+		public function enableMenuTextIndex(index:int):void {
+			var box:Object = boxes[index];
+			Global.enableText(box.element);
+		}
+
+		public function disableMenuTextIndex(index:int):void {
+			var box:Object = boxes[index];
+			Global.disableText(box.element);
+		}
+
 		public function addKeyListener(e:Event=null):void
 		{
 			if (!hasEventListener(KeyboardEvent.KEY_UP)) {
@@ -277,16 +296,16 @@ package ui {
 				default: break;
 			}
 
-			var selectedItem:Object = boxes[currentBox].menuItems[boxes[currentBox].selectedItem];
+			var selectedIndex:Object = boxes[currentBox].menuItems[boxes[currentBox].selectedIndex];
 			if (e.keyCode == 88) { //X
-				if (selectedItem) { 
-					selectedItem.callback(selectedItem.callbackParams);
+				if (selectedIndex) { 
+					selectedIndex.callback(selectedIndex.callbackParams);
 				} else {
 					boxes[currentBox].defaultCallback();
 				}
 			} else if(e.keyCode == 90) { //Z
-				if(selectedItem && selectedItem.exitCallback) {
-					selectedItem.exitCallback(selectedItem.exitCallbackParams);
+				if(selectedIndex && selectedIndex.exitCallback) {
+					selectedIndex.exitCallback(selectedIndex.exitCallbackParams);
 				} else {
 					boxes[currentBox].defaultExitCallback();
 				}
@@ -295,20 +314,41 @@ package ui {
 			e.stopPropagation();
 		}
       
-		public function changeItem(offset:int):void
+		public function changeItem(offset:int, destination:String=null):Boolean
 		{
-			var box:Object = boxes[currentBox];
+			if (!destination) { destination = currentBox; }
+			var box:Object = boxes[destination];
+			if (!box.menuItems.length) { return false; }
+trace('-------------------\nchangeItem: '+offset);
 
 			//set new selected index
-			var newIndex:int = box.selectedItem+offset;
-			if(newIndex < 0) { newIndex = box.menuItems.length-1; }
-			if(newIndex > box.menuItems.length-1) { newIndex = 0; }
-			box.selectedItem = newIndex;
-			if (!box.menuItems.length) { return; }
-			var item:Object = box.menuItems[newIndex];
+			var newIndex:int = box.selectedIndex + offset;
+			if (newIndex > box.menuItems.length - 1 ) {
+				box.selectedIndex = -1;
+				return changeItem(offset, destination);
+			}
+			if (newIndex < 0) {
+				box.selectedIndex = box.menuItems.length;
+				return changeItem(offset, destination);
+			}
+			if (!box.menuItems[newIndex].enabled) {
+				box.selectedIndex = newIndex;
+				return changeItem(offset + Utils.sign(offset));
+			}
+			
+			return selectItem(newIndex, destination);
+		}
+		
+		public function selectItem(index:int, destination:String=null):Boolean 
+		{
+			trace('selectItem: ' + index + ', ' + destination);
+			if (!destination) { destination = currentBox; }
+			var box:Object = boxes[destination];
+			var item:Object = box.menuItems[index];
+			box.selectedIndex = index;
 
 			//move pointer to new item and scroll if necessary
-			var selectedElement:Object = box.menuItems[newIndex].element;
+			var selectedElement:Object = box.menuItems[index].element;
 
 			var scrollPane:MovieClip = box.scrollPane;
 			if(box.layout != "free") {
@@ -324,12 +364,13 @@ package ui {
 			box.pointer.x = selectedElement.x - box.pointer.width/1.25;
 			box.clip.addChild(box.pointer);
 
-			if (box.changeCallback) { box.changeCallback(newIndex); }
+			if (box.changeCallback) { box.changeCallback(index); }
+			return true;
 		}
       
 		public function clearSelection(destination:String):void
 		{
-			boxes[destination].selectedItem = 0;
+			boxes[destination].selectedIndex = 0;
 			boxes[destination].pointer.visible = false;
 		}
 
@@ -364,7 +405,13 @@ package ui {
 					boxes[destination].clip.alpha = 1;
 				}
 				currentBox = destination;
-				changeItem(0);
+				
+				//select first enabled item
+				var selectedIndex:int = 0;
+				for each(var menuItem:Object in boxes[destination].menuItems) {
+					if (menuItem.enabled) { selectedIndex = menuItem.index; break;  }
+				}
+				changeItem(selectedIndex);
 			} else {
 				currentBox = null;
 			}
@@ -387,17 +434,17 @@ package ui {
 
 		public function getSelectedItem(destination:String):Object
 		{
-			return(boxes[destination].menuItems[boxes[destination].selectedItem]);
+			return(boxes[destination].menuItems[boxes[destination].selectedIndex]);
 		}
 
 		public function getSelectedIndex(destination:String):int
 		{
-			return(boxes[destination].selectedItem);
+			return(boxes[destination].selectedIndex);
 		}
 
-		public function updateSelectedItem(destination:String, item:Object):void
+		public function updateselectedIndex(destination:String, item:Object):void
 		{
-			boxes[destination].selectedItem = item;
+			boxes[destination].selectedIndex = item;
 		}
 	}
 }

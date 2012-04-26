@@ -1,16 +1,19 @@
-﻿package
+﻿package com.lasko.entity
 {
-    import com.greensock.motionPaths.RectanglePath2D;
 	import flash.display.MovieClip;
 	import flash.display.BitmapData;
 	import flash.geom.Rectangle;
 	import flash.geom.Point;
 	import flash.utils.Timer;
 	import flash.events.TimerEvent;
-    
-    import util.Utils;
+ 
+	import com.greensock.motionPaths.RectanglePath2D;
 	
-	public class Character
+    import com.lasko.util.Utils;
+    import com.lasko.entity.CharacterCombat;
+	import com.lasko.entity.Entity;
+	
+	public class Character extends Entity
 	{
 		private var parentMap:Map;
 		public var parentParty:Party;
@@ -21,13 +24,8 @@
 		public var height:int;
 		public var rect:Rectangle;
 		public var head_cutoff_y:int = 0;
-		
-		private var frames:Array = new Array();
-		private var currentFrame:int = 0;
-        private var frameDelayCount:int = 0;
-		private var state:Object = {"type": Global.STATE_DOWNSTILL};
-		public var animState:int;
-		//private var frameTimer:Timer = new Timer(100, 0);
+
+		private var state:Object = { "type": Global.STATE_DOWNSTILL };
 		private var pathNodeTimer:Timer;
 		private var canAcceptInput:Boolean = true;
 		
@@ -35,8 +33,8 @@
 		public var id:String;
 		public var name:String;
 		public var type:String;
-		private var xp:int, hp:int, mp:int, str:int, dex:int, intl:int, level:int;
-		private var maxHp:int, maxMp:int;
+		public var xp:int, hp:int, mp:int, str:int, dex:int, intl:int, level:int;
+		public var maxHp:int, maxMp:int;
 		public var collisionRectIndex:int;
 		private var checkCollisions:Boolean = false;
         private var charCollisionRect:Rectangle;
@@ -46,9 +44,8 @@
 		private var spells:Array = new Array();
 		private var weapons:Array = new Array();
 		public var inventory:Inventory;
-		private var slots:Object = {"L. Hand": null, "R. Hand": null, "Arms": null, "Torso": null, "Legs": null, "Head": null, "Neck": null};
+		public var slots:Object = {"L. Hand": null, "R. Hand": null, "Arms": null, "Torso": null, "Legs": null, "Head": null, "Neck": null};
 		
-		public var inCombat:Boolean = false;
 		public var isDosile:Boolean = false;
 		private var dosileTimer:Timer;
 		public var chaseRange:int = 0;
@@ -66,12 +63,11 @@
 		//for wandering logic
 		private var wanderParams:Object = {radius: 5, start_x: 0, start_y: 0, x: 0, y: 0, states: {}, statesSum: 0};
 		
-		//for blinking and other alternate frames
-		private var replaceTimer:int = 0;
+		public var combat:CharacterCombat;
+		public var anim:CharacterAnimation;
 		
 		public function Character(parentMap:Map, dataXML:XMLList, x:int, y:int)
 		{
-			var framesInfo:Array = new Array();
 			this.parentMap = parentMap;
 			this.x = x;
 			this.y = y;
@@ -84,31 +80,6 @@
 			
 			//character type
 			type = dataXML.type.text();
-			
-			//frames
-			var enumMap:Object = { 
-				'leftwalk': Global.STATE_LEFTWALK, 'rightwalk': Global.STATE_RIGHTWALK, 'upwalk': Global.STATE_UPWALK, 
-				'downwalk': Global.STATE_DOWNWALK, 'leftstill': Global.STATE_LEFTSTILL, 'rightstill': Global.STATE_RIGHTSTILL, 
-				'upstill': Global.STATE_UPSTILL, 'downstill': Global.STATE_DOWNSTILL , 'combat' : Global.STATE_COMBAT, 
-				'dead': Global.STATE_DEAD, 'standard': Global.STATE_STANDARD, 'leftblink': Global.STATE_LEFTBLINK, 
-				'rightblink': Global.STATE_RIGHTBLINK, 'downblink': Global.STATE_DOWNBLINK, 'invulnerable': Global.STATE_INVULNERABLE};
-			for each (var frameXML:XML in dataXML.frames.children())
-			{
-				var label:String = String(frameXML.@label.toXMLString());
-				if (enumMap[label]) { label = enumMap[label]; }
-				framesInfo.push({"num": frameXML.@index.toXMLString(), "label": Number(label), "default": frameXML.@default.toXMLString(), "speed": frameXML.@speed.toXMLString()});
-				
-				if (frameXML.@replace.length())
-				{
-					for (var i:int = 0; i < framesInfo.length; i++)
-					{
-						if (framesInfo[i].label == frameXML.@replace.toXMLString())
-						{
-							framesInfo[i].alternate = Number(label);
-						}
-					}
-				}
-			}
 			
 			//stats
 			hp = maxHp = dataXML.hp.text();
@@ -150,19 +121,6 @@
 				conditions.push(new Condition(conditionXML, this));
 			}
 			
-			//create the frame array
-			for each (var frameInfo:Object in framesInfo)
-			{
-				if (!frames[frameInfo.label])
-				{
-					frames[frameInfo.label] = [];
-				}
-				frames[frameInfo.label].push({"num": frameInfo.num, "default": frameInfo.default, "speed": frameInfo.speed, "alternate": frameInfo.alternate});
-			}
-			
-			//set initial frame
-			animState = frames[Global.STATE_DOWNSTILL] ? Global.STATE_DOWNSTILL : Global.STATE_STANDARD;
-			
 			//dimensions
 			width = dataXML.width.length() ? dataXML.width.text() : parentMap.tileWidth;
 			height = dataXML.height.length() ? dataXML.height.text() : parentMap.tileHeight;
@@ -170,10 +128,14 @@
 			head_cutoff_y = dataXML.head_y.length() ? dataXML.head_y.text() : 24;
 			
 			//misc
+			//only check collisions for carl
 			if (id == "carl" || id == "phillip lasko" || id == "townsman")
 			{
 				checkCollisions = true;
-			} //only check collisions for carl
+			}
+			
+			combat = new CharacterCombat(this);
+			anim = new CharacterAnimation(this, dataXML);
 		}
 		
 		public function setParty(party:Party):void
@@ -411,7 +373,7 @@
 					obj[param] = params[param];
                 }
                 this.state = obj;
-                setAnimState(type);
+                anim.setAnimState(type);
             //}
 		}
 		
@@ -425,93 +387,6 @@
 			return (state.type);
 		}
 		
-		public function getCurrentFrame():int
-		{
-			if (frames[animState][currentFrame].alternate)
-			{
-				if (this.replaceTimer++)
-				{
-					if (this.replaceTimer < frames[frames[animState][currentFrame].alternate][0].speed)
-					{
-						return (frames[frames[animState][currentFrame].alternate][0].num);
-					}
-					else
-					{
-						this.replaceTimer = 0;
-					}
-				}
-				else if (Utils.randRange(1, 30) == 30)
-				{
-					trace('returning ' + frames[frames[animState][currentFrame].alternate][0].num);
-					return (frames[frames[animState][currentFrame].alternate][0].num);
-				}
-			}
-			
-			return (frames[animState][currentFrame].num);
-		}
-		
-		public function setAnimState(animState:int):void
-		{
-			if (!frames[animState])
-			{
-				animState = frames[Global.STATE_DOWNSTILL] ? Global.STATE_DOWNSTILL : Global.STATE_STANDARD;
-			}
-			if (this.animState != animState)
-			{
-				this.animState = animState;
-				currentFrame = 0;
-				/*if (frames[animState].length > 1)
-				{
-					frameTimer.start();
-				}
-				else
-                
-				{
-					frameTimer.stop();
-				}*/
-				
-				switch (animState)
-				{
-					case "downstill":
-						
-						break;
-					case "downwalk1":
-						
-						break;
-					case "downwalk2":
-						
-						break;
-					default: 
-						break;
-				}
-			}
-		}
-		
-		public function setDefaultState():void
-		{
-			this.animState = frames[animState][currentFrame].default;
-			if (frames[animState].length > 1)
-			{
-				//frameTimer.start();
-			}
-			else
-			{
-				//frameTimer.stop();
-			}
-		}
-		
-		private function changeFrameEvent(e:TimerEvent=null):void
-		{
-			if (currentFrame < frames[animState].length - 1)
-			{
-				currentFrame++;
-			}
-			else
-			{
-				currentFrame = 0;
-			}
-		}
-		
         public function tick():void
         {
             if (state.type) {
@@ -521,7 +396,7 @@
 						//update y coordinate
 						y -= speed;
 						if (y <= state.target * parentMap.tileHeight) { 
-							changeFrameEvent();
+							anim.changeFrameEvent();
 							if (this.state.stop) { 
 								setState(Global.STATE_UPSTILL);
 								canAcceptInput = true;
@@ -541,7 +416,7 @@
 						//update y coordinate
 						y += speed;
 						if (y >= state.target * parentMap.tileHeight) { 
-							changeFrameEvent();
+							anim.changeFrameEvent();
 							if (this.state.stop) { 
 								setState(Global.STATE_DOWNSTILL);
 								canAcceptInput = true;
@@ -561,7 +436,7 @@
 						//update x coordinate
 						x -= speed;
 						if (x <= state.target * parentMap.tileWidth) { 
-							changeFrameEvent();
+							anim.changeFrameEvent();
 							if (this.state.stop) { 
 								setState(Global.STATE_LEFTSTILL);
 								canAcceptInput = true;
@@ -581,7 +456,7 @@
 						//update x coordinate
 						x += speed;
 						if (x >= state.target * parentMap.tileWidth) { 
-							changeFrameEvent();
+							anim.changeFrameEvent();
 							if (this.state.stop) { 
 								setState(Global.STATE_RIGHTSTILL);
 								canAcceptInput = true;
@@ -668,7 +543,7 @@
 					//if node has delay, set up timer
 					if (node.delay)
 					{
-						setDefaultState();
+						anim.setDefaultAnimState();
 						pathNodeTimer = new Timer(node.delay, 1);
 						pathNodeTimer.addEventListener(TimerEvent.TIMER, function(e:TimerEvent):void
 							{
@@ -740,7 +615,7 @@
 						}
 						break;
 					default: 
-						setDefaultState();
+						anim.setDefaultAnimState();
 						break;
 				}
 			}
@@ -756,14 +631,14 @@
 						if (sum >= rand)
 						{
 							trace('setting to ' + s);
-							setAnimState(Number(s));
+							anim.setAnimState(Number(s));
 							break;
 						}
 					}
 					
 				}
 				
-				switch (animState)
+				switch (anim.animState)
 				{
 					case "rightwalk": 
 						moveRight();
@@ -783,7 +658,7 @@
 						
 						break;
 					default: 
-						//setDefaultState();
+						//anim.setDefaultAnimState();
 						break;
 				}
 			}
@@ -822,6 +697,10 @@
 			trace('set slot ' + slot + ' to ' + item.name + ' for character ' + name);
 		}
 		
+		public function getSlot(slot:String):Item {
+			return slots[slot];
+		}
+		
 		public function getSpells():Array
 		{
 			return (spells);
@@ -857,102 +736,20 @@
 			chaseRange = value;
 		}
 		
-		public function setDosile():void
-		{
-			isDosile = true;
-			dosileTimer = new Timer(100, 0);
-			dosileTimer.addEventListener(TimerEvent.TIMER, dosileTimerHandler);
-			dosileTimer.start();
-		}
-		
-		private function dosileTimerHandler(e:TimerEvent):void
-		{
-			if (!rect.intersects(Global.game.party.leader.rect))
-			{
-				e.target.stop();
-				dosileTimer = null;
-				isDosile = false;
-			}
-		}
-		
-		/************************ COMBAT STUFF ***********************************/
-		private const FISTS_BONUS:int = 0;
-		
-		private var combatTarget:Object;
-		private var combatAction:Object;
-		private var combatTimer:Timer;
-		private var combatCallback:Function;
-		private var spellTarget:Object;
-		private var spellAction:Object;
-		private var spellTimer:Timer;
-		private var spellCallback:Function;
-		
-		public function getWeaponBonus():int
-		{
-			return (10);
-		/*if(equippedWeapon > -1) {
-		   return(weapons[equippedWeapon].bonus);
-		   } else {
-		   return(FISTS_BONUS);
-		 }*/
-		}
-		
-		public function receiveAttack(damage:int):void
-		{
-			hp -= damage;
-			trace("Attack received - " + name + "'s hp is now " + hp);
-			if (hp <= 0)
-			{
-				hp = 0;
-				die();
-			}
-		}
-		
-		public function sendAttack(dest:Character):Object
-		{
-			//hit?
-			var hit:Boolean = false;
-			var hitCalc:int = (dex + getWeaponBonus()) - (dest.dex + dest.getWeaponBonus()) + 10;
-			hit = (Utils.randRange(1, 20) < hitCalc);
-			
-			//apply damage if hit
-			if (hit)
-			{
-				var damageCalc:int = str + getWeaponBonus();
-				var damage:int = Utils.randRange(damageCalc, 2 * damageCalc);
-				trace(name + ' sent attack to ' + dest.name + ' and hit for ' + damage);
-				dest.receiveAttack(damage);
-				
-				return ({message: "Hit for " + damage + "!", value: damage});
-			}
-			else
-			{
-				trace(name + ' sent attack to ' + dest.name + ' but missed.');
-			}
-			
-			return ({message: "Missed!", value: null});
-		}
-		
-		public function getEquippedWeapon():Item
-		{
-			return (slots["L. Hand"]);
-		}
-		
-		public function sendSpell(spell:Spell, dest:Character):Object
-		{
-			var results:Object = spell.cast(dest);
-			return ({message: "Spell!", value: 100});
-		}
-		
 		private function die():void
 		{
-			setAnimState(Global.STATE_DEAD);
+			anim.setAnimState(Global.STATE_DEAD);
 			setState(Global.STATE_DEAD);
 		}
 		
 		public function setHP(value:int):void
 		{
 			hp = value;
+			if (hp <= 0)
+			{
+				hp = 0;
+				die();
+			}
 			trace(name + "'s hp is now " + hp);
 		}
 		
@@ -976,104 +773,22 @@
 			return (maxMp);
 		}
 		
-		public function findCombatTarget(choices:Array):void
+		public function setDosile():void
 		{
-			var rand:int = Utils.randRange(0, choices.length - 1);
-			combatTarget = {"character": choices[rand], "index": rand}
+			isDosile = true;
+			dosileTimer = new Timer(100, 0);
+			dosileTimer.addEventListener(TimerEvent.TIMER, dosileTimerHandler);
+			dosileTimer.start();
 		}
 		
-		public function getCombatTarget():Object
+		private function dosileTimerHandler(e:TimerEvent):void
 		{
-			return (combatTarget);
-		}
-		
-		public function getCombatAction():Object
-		{
-			return (combatAction);
-		}
-		
-		public function getSpellTarget():Object
-		{
-			return (spellTarget);
-		}
-		
-		public function getSpellAction():Object
-		{
-			return (spellAction);
-		}
-		
-		public function clearCombatAction():void
-		{
-			combatTarget = null;
-			combatAction = null;
-			inCombat = false;
-		}
-		
-		public function clearSpellAction():void
-		{
-			spellTarget = null;
-			spellAction = null;
-			inCombat = false;
-		}
-		
-		public function setCombatAction(type:String, subtype:String, callback:Function):void
-		{
-			combatAction = {"type": type, "subtype": subtype};
-			
-			combatCallback = callback;
-		}
-		
-		public function setSpellAction(spellIndex:int, callback:Function):void
-		{
-			spellAction = {"spellIndex": spellIndex};
-			
-			spellCallback = callback;
-		}
-		
-		public function setCombatTarget(target:Character, index:int):void
-		{
-			combatTarget = {"character": target, "index": index};
-		}
-		
-		public function setSpellTarget(target:Character, index:int):void
-		{
-			spellTarget = {"character": target, "index": index};
-		}
-		
-		private function combatActionDone(e:TimerEvent):void
-		{
-			combatCallback(this, sendAttack(combatTarget.character));
-			clearCombatAction();
-		}
-		
-		private function spellActionDone(e:TimerEvent):void
-		{
-			//spellCallback(this, sendSpell(spellTarget.character));
-			clearSpellAction();
-		}
-		
-		public function performCombatActions():void
-		{
-			inCombat = true;
-			combatTimer = new MyTimer(1000, 1);
-			combatTimer.addEventListener(TimerEvent.TIMER, combatActionDone);
-			combatTimer.start();
-		}
-		
-		public function performSpellActions():void
-		{
-			inCombat = true;
-			combatTimer = new MyTimer(1000, 1);
-			combatTimer.addEventListener(TimerEvent.TIMER, spellActionDone);
-			combatTimer.start();
-		}
-		
-		private function clearTimers():void
-		{
-			combatTimer.stop();
-			combatTimer = null;
-			inCombat = false;
-			combatCallback = null;
+			if (!rect.intersects(Global.game.party.leader.rect))
+			{
+				e.target.stop();
+				dosileTimer = null;
+				isDosile = false;
+			}
 		}
 	}
 }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" width="100" height="100" tilewidth="48" tileheight="48">
  <tileset firstgid="1" name="vfvfvf" tilewidth="48" tileheight="48">
-  <image source="tileset.png"/>
+  <image source="tileset.png" width="816" height="2352"/>
  </tileset>
- <layer name="Ground" width="100" height="100">
+ <layer name="Floor" width="100" height="100">
   <data>
    <tile gid="318"/>
    <tile gid="318"/>

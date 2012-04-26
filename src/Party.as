@@ -1,4 +1,7 @@
 ﻿package {
+
+	import com.lasko.entity.Character;
+	
    public class Party {
       public var characters:Array = new Array();
       public var leader:Character;

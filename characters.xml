@@ -9,7 +9,7 @@
       <type>primary</type>
       <hp>100</hp>
       <dex>40</dex>
-      <str>8</str>
+      <str>200</str>
       <mp>10</mp>
       <speed>3</speed>
 	  <head_y>23</head_y>

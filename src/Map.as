@@ -11,8 +11,9 @@
 	import flash.utils.Endian;
 	import flash.errors.IllegalOperationError;
     
-    import util.Base64;
-    
+    import com.lasko.util.Base64;
+    import com.lasko.entity.Character;
+	
 	public class Map
 	{
 		public var width:int;
@@ -26,7 +27,7 @@
 		private var parentClip:Test;
 		
 		public var tiles:Array = new Array();
-        public var tileSets:Object = { };
+        private var tileSets:Object = { };
 		public var collisionMap:Array = new Array();
 		public var collisionMapIndexes:Object = {};
 		public var collisionMapColliding:Array = new Array(); //for debugging
@@ -58,6 +59,17 @@
             mapLoader.load(new URLRequest(mapFilename));
         }
 
+		public function findTileSet(spriteNumIndex:int):Object {
+			var found:Object = null;
+			for each(var tileSet:Object in tileSets) {
+				if (tileSet.index <= spriteNumIndex) {
+					found = tileSet;
+				}
+			}
+			
+			return found;
+		}
+		
 		private function mapLoaded(e:Event):void
 		{
 			mapData = new XML(mapLoader.data);
@@ -68,7 +80,7 @@
                 tileSets[w] = {
                     width: w,
                     height: Number(tileset.@tileheight),
-                    index: Number(tileset.@firstgid),
+                    index: Number(tileset.@firstgid) - 1,
                     tilesPerRow: Number(w == 24 ? 34 : 17)
                 };
             }
@@ -84,13 +96,14 @@
 			}
 			
 			//get dimensions of map & tile dimensions
+			var tileSet:Object = findTileSet(mapData.layer.(@name == "Floor").data.tile[0].@gid);
 			width = mapData.layer.(@name == "Floor").@width;
 			height = mapData.layer.(@name == "Floor").@height;
-			tileWidth = 24;//mapData.tileset.@tilewidth;
-			tileHeight = 24;//mapData.tileset.@tileheight;
+			tileWidth = tileSet.width;//mapData.tileset.@tilewidth;
+			tileHeight = tileSet.height;//mapData.tileset.@tileheight;
 			pixelWidth = width * tileWidth;
 			pixelHeight = width * tileHeight;
-			
+
 			//get layer count and player layer 
 			for each (var node:XML in mapData.*)
 			{
@@ -119,18 +132,8 @@
 					switch (String(innerNode.name()))
 					{
 						case 'layer': //regular map layer - tiles
+							trace('processing layer ' + layerIndex);
 							var tileNodes:XMLList = innerNode.data.tile;
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            //var compressed:ByteArray = Base64.decode(innerNode.data);
-                            //compressed.inflate();
-                            
-                            
                             
 							for (var x:int = 0; x < width; x++)
 							{
@@ -196,9 +199,9 @@
 									addCollisionRect(new Rectangle(object.@x, object.@y, object.@width, object.@height), mapObject)
 									tiles[layerIndex][objectx][objecty] = mapObject;
 									
-									/********************* GRAVE            ************************/
+								/********************* GRAVE            ************************/
 								}
-								else if (object.@type == "grave")
+								/*else if (object.@type == "grave")
 								{
 									mapObject = new MapObject(this, Global.TILE_TYPE_GRAVE);
 									mapObject.x = object.@x;
@@ -209,9 +212,9 @@
 									addCollisionRect(new Rectangle(mapObject.x + 7, mapObject.y + 28, parseInt(object.@width) - 14, 20), mapObject);
 									//collisionMap.push(new Rectangle(mapObject.x + 6, mapObject.y + 14, 36, 26));
 									mapObject.collideIndex = collisionMap.length - 1;
-									
-									/********************* NPC            ************************/
-								}
+								
+								/********************* NPC            ************************/
+								//}
 								else if (object.@type == "npc")
 								{
 									//process npc party
@@ -493,7 +496,7 @@
 		
 		public function getTileAt(l:int, x:int, y:int):Object
 		{
-			if (tiles[l][x])
+			if (tiles[l] && tiles[l][x])
 			{
 				return (tiles[l][x][y]);
 			}

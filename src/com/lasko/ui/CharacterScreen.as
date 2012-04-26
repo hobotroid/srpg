@@ -1,4 +1,5 @@
-﻿package ui {
+﻿package com.lasko.ui
+{
    import flash.text.TextField;
    import flash.text.TextFormat;
    import flash.display.MovieClip;
@@ -8,14 +9,16 @@
    import flash.events.*;
    import flash.geom.Rectangle;
    import flash.geom.Point;
+   
+   import com.lasko.entity.Character;
 
    public class CharacterScreen extends Screen {
       private var party:Party;
 
       public function CharacterScreen(party:Party)
       {
-         addBox(10, 10, 410, 440, "characters");
-         addBox(390, 30, 200, 215, "menu");
+         addBox({x:10, y:10, width:410, height:440, label:"characters"});
+         addBox({x:390, y:30, width:200, height:215, label:"menu"});
 
          //characters
          this.party = party;
@@ -25,7 +28,7 @@
             if(portrait) { 
                var portraitImage:Bitmap = new Bitmap(new BitmapData(portrait.@width, portrait.@height));
                portraitImage.bitmapData.copyPixels(
-                  Global.tileset, 
+                  Global.tileset48, 
                   new Rectangle((portrait.@index % 17) * 48, (int(portrait.@index/17)) * 48, portrait.@width, portrait.@height),
                   new Point(0, 0)
                );
@@ -39,8 +42,8 @@
             }
             
             //Stat bars
-            var hpBar:UIBar = new UIBar(0xff0000, char.getMaxHP());
-            var mpBar:UIBar = new UIBar(0x0000fff, char.getMaxMP());
+            var hpBar:UIBar = new UIBar(0xff0000, char.getMaxHP(), 'hp');
+            var mpBar:UIBar = new UIBar(0x0000fff, char.getMaxMP(), 'sp');
             hpBar.x = charBox.x + charBox.width + 10;
             hpBar.y = charBox.y;
             hpBar.setValue(char.getHP());
@@ -49,14 +52,14 @@
             charBox.addChild(hpBar);
             charBox.addChild(mpBar);
             
-            addMenuItem("characters", charBox, characterSelected, null, switchBox, "menu");
+            addMenuItem("characters", charBox, { callback: characterSelected, exitCallback: switchBox, exitCallbackParams: "menu"});
          }
          
          //menu options
-         addMenuText("menu", "EQUIPMENT", switchBox, "characters", exitAction)
-         addMenuText("menu", "SCIENCE", switchBox, "characters", exitAction);
-         addMenuText("menu", "ITEM", switchBox, "characters", exitAction);
-         addMenuText("menu", "EXIT", exitAction);
+         addMenuText("menu", {label:"EQUIPMENT", callback:switchBox, callbackParams: "characters", exitCallback:exitAction});
+         addMenuText("menu", {label:"SCIENCE", callback:switchBox, callbackParams:"characters", exitCallback:exitAction});
+         addMenuText("menu", {label:"ITEM", callback:switchBox, callbackParams:"characters", exitCallback:exitAction});
+         addMenuText("menu", {label:"EXIT", callback:exitAction});
 
          switchBox("menu"); 
          

@@ -1,4 +1,4 @@
-package ui
+package com.lasko.ui
 {
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
