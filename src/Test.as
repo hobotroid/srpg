@@ -33,6 +33,7 @@
 	import com.lasko.ui.*;
     import com.lasko.util.*;
 	import com.lasko.entity.Character;
+	import com.lasko.encounter.Encounter;
 	
 	public class Test extends TopLevel
 	{
@@ -623,7 +624,7 @@
 					//if normal size, go to fullscreen, else go to normal size
 					if (FlexGlobals.topLevelApplication.stage.displayState == StageDisplayState.NORMAL)
 					{
-						FlexGlobals.topLevelApplication.stage.displayState = StageDisplayState.FULL_SCREEN;
+						FlexGlobals.topLevelApplication.stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
 						FlexGlobals.topLevelApplication.stage.scaleMode = StageScaleMode.SHOW_ALL;
 						
 					}

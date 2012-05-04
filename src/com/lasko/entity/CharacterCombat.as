@@ -41,7 +41,7 @@ package com.lasko.entity
 			trace(character.name + ": Attack received");
 		}
 		
-		public function sendAttack(dest:Character):Object
+		public function sendAttack(dest:Character, item:Item):Object
 		{
 			//hit?
 			var hit:Boolean = false;
