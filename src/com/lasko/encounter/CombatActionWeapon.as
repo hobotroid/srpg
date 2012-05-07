@@ -1,17 +1,18 @@
 package com.lasko.encounter 
 {
+	import flash.events.Event;
 	import com.lasko.entity.Character;
 	
-	public class CombatActionWeapon extends CombatAction
+	public class CombatActionWeapon extends CombatActionBase
 	{
 		private var weaponItem:Item;
 		
 		public function CombatActionWeapon()
 		{
-			
+
 		}
 		
-		public function getName():String {
+		public override function getName():String {
 			return "weapon";
 		}
 		
@@ -19,18 +20,18 @@ package com.lasko.encounter
 			this.weaponItem = item;
 		}
 		
-		public function execute():void {
+		public override function execute():void {
 			var targets:Array = this.getTargets();
 			var source:Character = this.getSource();
 			
 			for each(var targetCharacter:Character in targets) {
-				source.combat.sendAttack(targetCharacter, this.weaponItem);
+				var result:Object = source.combat.sendAttack(targetCharacter, this.weaponItem);
+				trace(result.message);
 			}
 
-			showCombatAnimation(party[index], function(e:Event):void {
+			/*showCombatAnimation(party[index], function(e:Event):void {
 				doMemberAction(index + 1);
-			});
-			debugOut(results.message);
+			});*/
 		}
 	}
 

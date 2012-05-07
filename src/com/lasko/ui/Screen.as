@@ -319,7 +319,6 @@ package com.lasko.ui
 			if (!destination) { destination = currentBox; }
 			var box:Object = boxes[destination];
 			if (!box.menuItems.length) { return false; }
-trace('-------------------\nchangeItem: '+offset);
 
 			//set new selected index
 			var newIndex:int = box.selectedIndex + offset;
@@ -341,7 +340,6 @@ trace('-------------------\nchangeItem: '+offset);
 		
 		public function selectItem(index:int, destination:String=null):Boolean 
 		{
-			trace('selectItem: ' + index + ', ' + destination);
 			if (!destination) { destination = currentBox; }
 			var box:Object = boxes[destination];
 			var item:Object = box.menuItems[index];

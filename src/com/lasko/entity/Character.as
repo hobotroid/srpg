@@ -12,6 +12,7 @@
     import com.lasko.util.Utils;
     import com.lasko.entity.CharacterCombat;
 	import com.lasko.entity.Entity;
+	import com.lasko.encounter.CombatCondition;
 	
 	public class Character extends Entity
 	{
@@ -118,7 +119,7 @@
 			//combat conditions
 			for each (var conditionXML:XML in dataXML.conditions.children())
 			{
-				conditions.push(new Condition(conditionXML, this));
+				conditions.push(new CombatCondition(conditionXML, this));
 			}
 			
 			//dimensions

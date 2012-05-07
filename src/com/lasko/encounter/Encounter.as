@@ -33,24 +33,28 @@
 		private static const CHARACTER_SCALE:int = 1;
 		private static const PARTY_SELECTOR_SPEED:int = 60;
 		private static const ENEMY_SELECTOR_SPEED:int = 160;
+		
+		private static var debugField:TextField = new TextField();
+		
 		private static var map:Map = Global.game.getActiveMap();
 		[Embed(source="../../../../gfx/plane-fight-background.png")]
 		private static var BackgroundClass:Class;
 
 		private var background:Bitmap;
-		private var party:Array = new Array();
-		private var enemies:Array = new Array();
+		private var goodEntities:Array = new Array();
+		private var badEntities:Array = new Array();
 		private var goodParty:Party, badParty:Party;
 		private var goodClip:MovieClip = new MovieClip();
 		private var badClip:MovieClip = new MovieClip();
 		private var selectedTarget:int = -1;
 		private var selectedMember:int = -1;
 		private var state:String = "";
-		private var pointer:Bitmap;
+		
+		private var turn:Turn;
 
 		private var menus:Screen = new Screen(false);
-		private var debugField:TextField = new TextField();
 
+		private var pointer:Bitmap;
 		private var partySelector:Sprite = new Sprite();
 		private var partySelectorTimer:Timer = new Timer(PARTY_SELECTOR_SPEED, 0);
 		private var enemySelector:Bitmap;
@@ -59,41 +63,23 @@
 
 		public function Encounter(goodies:Party, baddies:Party) 
 		{
-			var count:int = 0;
+			var entity:EncounterEntity;
+			var sprite:Sprite;
+			
 			addEventListener(Event.ADDED_TO_STAGE, init);
 			goodParty = goodies;
 			badParty = baddies;
          
 			//set up party array
-			for each(var good:Character in goodies.characters) {
-				good.anim.setAnimState(Global.STATE_COMBAT);
-				good.setState(Global.STATE_COMBAT);
-				var object:Object = {};
-				object.character = good;
-				object.bitmap = new Bitmap(new BitmapData(good.width, good.height));
-				object.sprite = new Sprite();
-				object.index = count;
-				object.state = "waiting";
-				this.party.push(object);
-				updateCharacter(object);
-
-				count++;
+			for each(var goodCharacter:Character in goodies.characters) {
+				entity = new EncounterEntity(goodCharacter, EncounterEntity.TYPE_GOOD);
+				this.goodEntities.push(entity);
 			}
          
 			//set up enemies array
-			count = 0;
-			for each(var bad:Character in baddies.characters) {
-				bad.anim.setAnimState(Global.STATE_COMBAT);
-				object = {};
-				object.character = bad;
-				object.bitmap = new Bitmap(new BitmapData(bad.width, bad.height));
-				object.sprite = new Sprite();
-				object.index = count;
-				object.state = "waiting";
-				this.enemies.push(object);
-				updateCharacter(object);
-
-				count++;
+			for each(var badCharacter:Character in baddies.characters) {
+				entity = new EncounterEntity(badCharacter, EncounterEntity.TYPE_BAD);
+				this.badEntities.push(entity);
 			}
          
 			//Set up frames for party selector animation
@@ -128,26 +114,24 @@
 			addChild(background);
          
 			//place sprites
-			for each(var member:Object in party) {
-				member.sprite.scaleX = member.sprite.scaleY = CHARACTER_SCALE;
-				member.sprite.y = member.sprite.height * member.index;
-				member.original_x = 0;
-				member.original_y = member.sprite.y;
-				goodClip.addChild(member.sprite);
-				debugOut('added bitmap for ' + member.character.name + ' (y='+member.sprite.y+')');
+			for each(entity in goodEntities) {
+				sprite = entity.getSprite();
+				entity.setPosition(0, sprite.height * entity.getIndex());
+				entity.setScale(CHARACTER_SCALE, CHARACTER_SCALE);
+				goodClip.addChild(sprite);
+				debugOut('added sprite for ' + entity.getCharacter().name + ' (y='+sprite.y+')');
 			}
 			goodClip.x = width - PADDING_RIGHT - goodClip.width;
 			goodClip.y = height / 2 - goodClip.height / 2;
 			addChild(goodClip);
 			goodClip.addChild(partySelector);
          
-			for each(var enemy:Object in enemies) {
-				enemy.sprite.scaleX = enemy.sprite.scaleY = CHARACTER_SCALE;
-				enemy.sprite.y = enemy.sprite.height * enemy.index;
-				enemy.original_x = 0;
-				enemy.original_y = member.sprite.y;
-				debugOut('added bitmap for ' + enemy.character.name + ' (y='+enemy.sprite.y+')');
-				badClip.addChild(enemy.sprite);
+			for each(entity in badEntities) {
+				sprite = entity.getSprite();
+				entity.setPosition(0, sprite.height * entity.getIndex());
+				entity.setScale(CHARACTER_SCALE, CHARACTER_SCALE);
+				badClip.addChild(sprite);
+				debugOut('added sprite for ' + entity.getCharacter().name + ' (y='+sprite.y+')');
 			}
 			badClip.x = PADDING_LEFT;
 			badClip.y = height / 2 - badClip.height / 2;
@@ -169,20 +153,22 @@
 			//new bottom menu
 			var heads:MovieClip = new MovieClip();
 			var HEAD_WIDTH:int = 90, HEAD_HEIGHT:int = 90, BOTTOM_BAR_WIDTH:int = width - 20, 
-				BARS_HEIGHT:int = 25, HEAD_PADDING:int = 15, BOTTOM_Y:int = height-135;
+				BARS_HEIGHT:int = 25, HEAD_PADDING:int = 15, BOTTOM_Y:int = height - 135,
+				count:int = 0;
 			menus.addBox( { x:10, y:BOTTOM_Y, width:BOTTOM_BAR_WIDTH, height:128, label:"party", layout:"free", columns:0, color:0xffffff } );
-			count = 0;
-			for each(member in party) {
+			
+			for each(var member:EncounterEntity in goodEntities) {
 				var headClip:MovieClip = new MovieClip();
+				var char:Character = member.getCharacter();
 				
 				//faces
-				var headBmp:Bitmap = new Bitmap(new BitmapData(member.character.width, member.character.height));
-				var currentFrame:int = member.character.anim.getCurrentFrame();
+				var headBmp:Bitmap = new Bitmap(new BitmapData(char.width, char.height));
+				var currentFrame:int = char.anim.getCurrentFrame();
 				headBmp.bitmapData.copyPixels(
-					Global.tileset48, new Rectangle((currentFrame % 17) * 48, (int(currentFrame / 17)) * 48, member.character.width, member.character.height), new Point(0, 0)
+					Global.tileset48, new Rectangle((currentFrame % 17) * 48, (int(currentFrame / 17)) * 48, char.width, char.height), new Point(0, 0)
 				);
 				headBmp.bitmapData = Utils.autoCrop(headBmp.bitmapData);
-				headBmp.bitmapData = Utils.crop(headBmp.bitmapData, new Rectangle(0, 0, headBmp.bitmapData.width, member.character.head_cutoff_y));			
+				headBmp.bitmapData = Utils.crop(headBmp.bitmapData, new Rectangle(0, 0, headBmp.bitmapData.width, char.head_cutoff_y));			
 				Utils.resizeMe(headBmp, HEAD_WIDTH, HEAD_HEIGHT);
 				//headBmp.x = HEAD_PADDING * count + HEAD_WIDTH * count + HEAD_WIDTH / 2 - headBmp.width / 2 + 5;
 				//headBmp.y = HEAD_HEIGHT / 2 - headBmp.height / 2;
@@ -192,8 +178,8 @@
 				headClip.addChild(headBmp);
 				
 				//mp+sp bars
-				var hpBar:UIBar = new UIBar(Global.BAR_COLOR_HP, member.character.getMaxHP(), '');
-				var spBar:UIBar = new UIBar(Global.BAR_COLOR_SP, member.character.getMaxMP(), '');
+				var hpBar:UIBar = new UIBar(Global.BAR_COLOR_HP, char.getMaxHP(), '');
+				var spBar:UIBar = new UIBar(Global.BAR_COLOR_SP, char.getMaxMP(), '');
 				hpBar.y = 90;
 				//hpBar.x = HEAD_PADDING * count + count * HEAD_WIDTH + 9;
 				hpBar.x = 9;
@@ -243,53 +229,60 @@
 
 		private function init(e:Event):void {
 			stage.focus = this;
-			newTurn();
+			this.turn = new Turn(goodEntities, badEntities);
+			
+			//give player control for picking party actions
+			menus.switchBox("party");
+			selectNextMember();
+			state = "choosing_member";
+			menus.addKeyListener();
 		}
 
-		private function partySelected(object:Object):void
+		private function partySelected(entity:EncounterEntity):void
 		{
 			var partyBox:Object = menus.getBox("party");
 			var ACTIONS_W:int = 92;
 			var ACTIONS_H:int = 114;
-			debugOut(object.character.name + " selected, giving action choices...");
-			selectedMember = object.index;
+			debugOut(entity.getCharacter().name + " selected, giving action choices...");
+			selectedMember = entity.getIndex();
 
 			menus.addBox({x:partyBox.x + 10, y:partyBox.y + partyBox.height/2 - ACTIONS_H/2, width:ACTIONS_W, height:ACTIONS_H, label:"actions"});
-			menus.addMenuText("actions", {label:"Attack", callback:attackSelected, callbackParams:object, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
-			menus.addMenuText("actions", {label:"Science", callback:scienceSelected, callbackParams:object, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
-			menus.addMenuText("actions", {label:"Things", callback:thingsSelected, callbackParams:object, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
+			menus.addMenuText("actions", {label:"Attack", callback:attackSelected, callbackParams:entity, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
+			menus.addMenuText("actions", {label:"Science", callback:scienceSelected, callbackParams:entity, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
+			menus.addMenuText("actions", {label:"Things", callback:thingsSelected, callbackParams:entity, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
 			state = "choosing_actions";
 			menus.switchBox("actions");
 		}
 
 		private function targetSelected(params:Object=null):void {
-			party[selectedMember].target = selectedTarget;
-
 			removeKeyListener();
 			menus.removeBox("actions");
 			menus.removeBox("science");
 			menus.removeBox("enemies");
 			menus.switchBox("party");
 
-			if(selectedTarget > 0) {	//selected an enemy
-				debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targets: ' + enemies[selectedTarget-1].character.name + ' (' + selectedTarget + ')');
-			} else {				   	//selected an ally
-				debugOut(party[selectedMember].character.name + ' (' + selectedMember + ') targets: ' + party[Math.abs(selectedTarget)-1].character.name + ' (' + selectedTarget + ')');
-			}
+			var character:Character = goodEntities[selectedMember].getCharacter();
+			var action:CombatActionBase = goodEntities[selectedMember].getAction();
+			var targetCharacter:Character = selectedTarget > 0 ? badEntities[selectedTarget - 1].getCharacter() : goodEntities[Math.abs(selectedTarget) - 1].getCharacter();
+			action.addTarget(targetCharacter);
+			debugOut(character.name + ' (' + selectedMember + ') targets: ' + targetCharacter.name + ' (' + selectedTarget + ')');
 			selectTarget('enemy', -1);
 
 			//if all party members have chosen an action + target, do turn
 			var actionCount:int = 0;
-			for (var i:int = 0; i < party.length; i++) {
-				if (party[i].target != null) { 
+			for (var i:int = 0; i < goodEntities.length; i++) {
+				action = goodEntities[i].getAction();
+				if (action != null && action.hasTargets()) { 
 					actionCount++; 
 				} else {
 					selectNextMember();
 					break;
 				}
 			}
-			if (actionCount == party.length) {
-				startTurn();
+			if (actionCount == goodEntities.length) {
+				turn = new Turn(goodEntities, badEntities);
+				state = "turn";
+				partySelector.visible = false;
 				return;
 			}
 
@@ -301,7 +294,13 @@
 		{
 			debugOut("attack selected, choosing enemy...");
 			var actionsBox:Object = menus.getBox("actions");
-			party[selectedMember].action = "combat";
+			var selectedEntity:EncounterEntity = goodEntities[selectedMember];
+			var selectedCharacter:Character = selectedEntity.getCharacter();
+			var action:CombatActionWeapon = new CombatActionWeapon();
+			action.setWeapon(selectedCharacter.combat.getEquippedWeapon());
+			action.setSource(selectedCharacter);
+			selectedEntity.setAction(action);
+			
 			menus.switchBox(null);
 			selectFirstTarget();
 		 
@@ -312,8 +311,8 @@
 					menus.switchBox("actions");
 				}
 			});
-			for each(var bad:Object in enemies) {
-				menus.addMenuText("enemies", {label:bad.character.name, callback:targetSelected, enabled:bad.state != "dead"});
+			for each(var badEntity:EncounterEntity in badEntities) {
+				menus.addMenuText("enemies", {label:badEntity.getCharacter().name, callback:targetSelected, enabled:badEntity.getState() != EncounterEntity.STATE_DEAD});
 			}
 			menus.addMenuChangeCallback("enemies", function(index:int):void {
 				selectTarget('enemy', index+1);
@@ -330,7 +329,7 @@
 			state = "choosing_science";
 
 			menus.addBox({x:60, y:height - 200, width:400, height:100, label:"science"});
-			var char:Character = party[selectedMember].character;
+			var char:Character = goodEntities[selectedMember].getCharacter();
 			var spells:Array = char.getSpells();
 
 			for each(var spell:Spell in spells) {
@@ -343,7 +342,7 @@
 		private function thingsSelected(object:Object):void 
 		{
 			debugOut("things selected, choosing inventory item...");
-			var char:Character = party[selectedMember].character;
+			var char:Character = goodEntities[selectedMember].getCharacter();
 			state = "choosing_thing";
 			if (goodParty.inventory.hasCombatItem()) {
 				menus.addBox({x:60, y:height - 200, width:500, height:100, label:"things"});
@@ -362,8 +361,10 @@
 		private function spellSelected(spell:Spell):void
 		{
 			debugOut("spell " + spell.name + " selected, choosing target...");
-			party[selectedMember].action = "spell";
-			party[selectedMember].spell = spell;
+			var action:CombatActionSpell = new CombatActionSpell();
+			action.setSpell(spell);
+			goodEntities[selectedMember].setAction(action);
+			
 			menus.switchBox(null);
 			selectFirstTarget();
 
@@ -375,8 +376,10 @@
 		private function itemSelected(item:Item):void
 		{
 			debugOut("item " + item.name + " selected, choosing target...");
-			party[selectedMember].action = "item";
-			party[selectedMember].item = item;
+			var action:CombatActionItem = new CombatActionItem();
+			action.setItem(item);
+			goodEntities[selectedMember].setAction(action);
+			
 			menus.switchBox(null);
 			selectFirstTarget();
          
@@ -396,23 +399,24 @@
 				return;
 			}
 			
-			if(type == 'enemy') {	//targetting enemy
-				pointer.x = badClip.x + enemies[index-1].sprite.x;
-				pointer.y = badClip.y + enemies[index-1].sprite.y - pointer.height - 5;
+			var sprite:Sprite;
+			if (type == 'enemy') {	//targetting enemy
+				sprite = badEntities[index - 1].getSprite();
 				selectedTarget = index;
 			} else {				//targetting ally
-				pointer.x = goodClip.x + party[index-1].sprite.x;
-				pointer.y = goodClip.y + party[index-1].sprite.y - pointer.height - 5;
+				sprite = goodEntities[index - 1].getSprite();
 				selectedTarget = -index;
 			}
 			
+			pointer.x = goodClip.x + sprite.x;
+			pointer.y = goodClip.y + sprite.y - pointer.height - 5;
 			pointer.visible = true;
 		}
 
 		private function selectFirstTarget():void
 		{
-			for (var i:int = 0; i < enemies.length; i++) {
-				if (enemies[i].character.getStateName() != Global.STATE_DEAD) {
+			for (var i:int = 0; i < badEntities.length; i++) {
+				if (badEntities[i].getState() != EncounterEntity.STATE_DEAD) {
 					selectTarget('enemy', i+1);
 					return;
 				}
@@ -425,18 +429,18 @@
 			var index:int = Math.abs(selectedTarget) - 1;
 			
 			if(selectedTarget > 0) { //selecting an enemey
-				while (checkedCount < enemies.length) {
-					if (++index > enemies.length - 1) { index = 0; }
-					if (enemies[index].character.getStateName() != Global.STATE_DEAD) {
+				while (checkedCount < badEntities.length) {
+					if (++index > badEntities.length - 1) { index = 0; }
+					if (badEntities[index].getState() != EncounterEntity.STATE_DEAD) {
 						selectTarget('enemy', index+1);
 						return;
 					}
 					checkedCount++;
 				}
 			} else {					//selecting an ally
-				while (checkedCount < party.length) {
-					if (++index > party.length - 1) { index = 0; }
-					if (party[index].character.getStateName() != Global.STATE_DEAD) {
+				while (checkedCount < goodEntities.length) {
+					if (++index > goodEntities.length - 1) { index = 0; }
+					if (goodEntities[index].getState() != EncounterEntity.STATE_DEAD) {
 						selectTarget('ally', index+1);
 						return;
 					}
@@ -451,18 +455,18 @@
 			var index:int = Math.abs(selectedTarget) - 1;
 
 			if(selectedTarget > 0) { //selecting an enemey
-				while (checkedCount < enemies.length) {
-					if (--index < 0) { index = enemies.length - 1; }
-					if (enemies[index].character.getStateName() != Global.STATE_DEAD) {
+				while (checkedCount < badEntities.length) {
+					if (--index < 0) { index = badEntities.length - 1; }
+					if (badEntities[index].getState() != EncounterEntity.STATE_DEAD) {
 						selectTarget('enemy', index+1);
 						return;
 					}
 					checkedCount++;
 				}
 			} else {					//selecting an ally
-				while (checkedCount < party.length) {
-					if (--index < 0) { index = party.length - 1; }
-					if (party[index].character.getStateName() != Global.STATE_DEAD) {
+				while (checkedCount < goodEntities.length) {
+					if (--index < 0) { index = goodEntities.length - 1; }
+					if (goodEntities[index].getState() != EncounterEntity.STATE_DEAD) {
 						selectTarget('ally', index+1);
 						return;
 					}
@@ -475,74 +479,9 @@
 		{
 			menus.changeItem(1);
 		}
-      
-      
-      
+
 		/************************** TURN STUFF *********************************/
-		private function newTurn():void
-		{
-			debugOut("-------------- new turn --------------");
-			var i:int = 0;
-			for (i = 0; i < party.length; i++) {
-				party[i].target = null;
-			}
-			for (i = 0; i < enemies.length; i++) {
-				enemies[i].target = null;
-			}
-			
-			//choosing enemy targets and actions
-			for (i = 0; i < enemies.length; i++) {
-				//enemies[i].character.combat.determineCombatAction(goodParty);
-				enemies[i].target = null;
-			}
-			
-			//give player control for picking party actions
-			menus.switchBox("party");
-			selectNextMember();
-			state = "choosing_member";
-			menus.addKeyListener();
-		}
-      
-		private function startTurn():void
-		{
-			debugOut('startTurn() - actions chosen for all party members + enemies, initiating turn');
-			state = "turn";
-
-			partySelector.visible = false;
-			doMemberAction(0);
-			doEnemyAction(0);
-		}
-      
-		//called after all actions & their animations are done
-		private function endTurn():void
-		{
-			debugOut('endTurn()');
-			var deadCount:int = 0;
-			for (var i:int = 0; i < enemies.length; i++) {
-				var char:Character = enemies[i].character;
-
-				if(char.conditions[0] && char.conditions[0].isActive()) {
-					char.conditions[0].applyActions();
-				}
-				updateCharacter(enemies[i]);
-
-				trace(char.name+'\'s STATE: '+char.getStateName());
-				if (char.getStateName() == Global.STATE_DEAD) {
-					if (enemies[i].state != "dead") { 
-						doEnemyDeathAnimation(i);
-						enemies[i].state = "dead"
-					}
-					deadCount++;
-				}
-			}
-
-			if (deadCount >= enemies.length) {
-				debugOut('ALL ENEMIES KILLED - ending combat');
-				endCombat();
-			} else {
-				newTurn();
-			}
-		}
+		
       
 		private function endCombat():void
 		{
@@ -563,64 +502,7 @@ trace('removing encounter from stage');
 			Global.game.endEncounter(this);
 		}
       
-		private function doMemberAction(index:int):void
-		{
-			//all actions done, start new turn
-			if (index > party.length - 1) { 
-				endTurn();
-				return;
-			}
 
-			var results:Object;
-			if (party[index].action != null) {
-				var combatAction:CombatActionBase = party[index].action;
-				debugOut(party[index].character.name + "'s action is: " + combatAction.getName());
-/*				switch(party[index].action) {
-					case 'spell':
-						if(party[index].target > 0) { //targetting an enemy
-							results = party[index].character.combat.sendSpell(party[index].spell, enemies[party[index].target - 1].character);
-						} else {				 //targetting an ally
-							results = party[index].character.combat.sendSpell(party[index].spell, party[Math.abs(party[index].target) - 1].character);
-						}
-						showSpellAnimation(party[index], function():void {
-							doMemberAction(index + 1);
-						});
-						debugOut(results.message);
-					break;
-					case 'item':
-						results = party[index].item.useItem( { target: enemies[party[index].target] } );
-						debugOut(results.message);
-					break;
-					default: break;
-				}*/
-			}
-
-			updateCharacter(party[index]);
-		}
-		
-		private function doEnemyAction(index:int):void
-		{
-			var results:Object;
-			if (enemies[index].target != null && enemies[index].action != null) {
-					debugOut(enemies[index].character.name + "'s action is: " + enemies[index].action);
-					switch(enemies[index].action) {
-						case 'combat':
-							if(enemies[index].target > 0) { //targetting an enemy
-								results = enemies[index].character.combat.sendAttack(enemies[enemies[index].target - 1].character);
-							} else {				 	  //targetting an ally
-								results = enemies[index].character.combat.sendAttack(party[Math.abs(enemies[index].target) - 1].character);
-							}
-							showCombatAnimation(party[index], function(e:Event):void {
-								doEnemyAction(index + 1);
-							});
-							debugOut(results.message);
-						break;
-					default: break;
-				}
-			}
-			
-			updateCharacter(enemies[index]);
-		}
       
       /************************** KEY LISTENER STUFF ****************************/
       public function addKeyListener(e:Event=null):void
@@ -658,7 +540,7 @@ trace('removing encounter from stage');
 						targetSelected();
 					} else if(e.keyCode == 90) { //Z
 						selectTarget('enemy', 1);
-						if (party[selectedMember].action == "spell") {
+						if (goodEntities[selectedMember].action == "spell") {
 							menus.switchBox("science");
 						} else { 
 							menus.switchBox("actions");
@@ -676,33 +558,22 @@ trace('removing encounter from stage');
 			e.stopPropagation();
 		}
       
-      public function partyChanged(index:int):void
-      {
-         partySelector.x = party[index].sprite.x;
-         partySelector.y = party[index].sprite.y+7;
-         partySelector.visible = true;
+		public function partyChanged(index:int):void
+		{
+			partySelector.x = goodEntities[index].getSprite().x;
+			partySelector.y = goodEntities[index].getSprite().y+7;
+			partySelector.visible = true;
 
-         if(!partySelectorTimer.running) { partySelectorTimer.start(); }
-      }
+			if(!partySelectorTimer.running) { partySelectorTimer.start(); }
+		}
       
 		/***************** GRAPHICS STUFF ********************/
-		private function updateCharacter(object:Object):void
-		{
-			if (object.state == "dead") { return; }
 
-			var currentFrame:int = object.character.anim.getCurrentFrame();
-			object.bitmap.bitmapData.copyPixels(
-				Global.tileset48, 
-				new Rectangle((currentFrame % 17) * 48, (int(currentFrame/17)) * 48, object.bitmap.width, object.bitmap.height),
-				new Point(0, 0)
-			);
-			if (!object.sprite.contains(object.bitmap)) { object.sprite.addChild(object.bitmap); }
-		}
       
 		private function showCombatAnimation(character:Object, callback:Function):void
 		{
 			showCombatAttack(character, function(e:Event):void { 
-				var targetted:Object = e.target.params.character.target > 0 ? enemies[e.target.params.character.target - 1] : party[Math.abs(e.target.params.character.target) - 1];
+				var targetted:Object = e.target.params.character.target > 0 ? badEntities[e.target.params.character.target - 1] : goodEntities[Math.abs(e.target.params.character.target) - 1];
 				showCombatHit(targetted, function(e:Event):void { 
 					//move char back to original position, then callback
 					TweenMax.to(character.sprite, .5, { x:character.original_x, ease:Expo.easeInOut, onComplete: callback, onCompleteParams: [e]}); 
@@ -802,8 +673,8 @@ trace('removing encounter from stage');
       private function doEnemyDeathAnimation(index:int):void
       {
 debugOut('doing enemy death for enemy ' + index);
-         var sprite:Sprite = enemies[index].sprite;
-         var bitmap:Bitmap = enemies[index].bitmap;
+         var sprite:Sprite = badEntities[index].sprite;
+         var bitmap:Bitmap = badEntities[index].bitmap;
          var bmd:BitmapData = bitmap.bitmapData;
          
          var pass1:Bitmap = new Bitmap(new BitmapData(bmd.width, bmd.height, true, 0x00000000));
@@ -922,7 +793,7 @@ debugOut('doing enemy death for enemy ' + index);
 			);
 		}
       
-		private function debugOut(value:String):void
+		public static function debugOut(value:String):void
 		{
 			if (debugField.text.length) { debugField.appendText("\n"); }
 			debugField.appendText(value);

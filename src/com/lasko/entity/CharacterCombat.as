@@ -143,7 +143,7 @@ package com.lasko.entity
 		
 		private function combatActionDone(e:TimerEvent):void
 		{
-			combatCallback(this, sendAttack(combatTarget.character));
+			combatCallback(this, sendAttack(combatTarget.character, null));
 			clearCombatAction();
 		}
 		

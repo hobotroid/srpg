@@ -141,8 +141,8 @@
                     gameState = "play";
                     startGameTimer();
 					
-					//temporary
-					//checkRandomEncounter(true);
+					//temporary - start encounter immediately
+					checkRandomEncounter(true);
                 });
             });
 			
