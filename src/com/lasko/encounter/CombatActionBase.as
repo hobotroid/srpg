@@ -3,11 +3,11 @@ package com.lasko.encounter
 	import flash.utils.*;
 	
 	import com.adobe.utils.*;
-	import com.lasko.entity.Character;
+	import com.lasko.encounter.EncounterEntity
 	
 	public class CombatActionBase
 	{
-		private var source:Character;
+		private var source:EncounterEntity;
 		private var targets:Array;
 		
 		public function CombatActionBase():void
@@ -15,23 +15,23 @@ package com.lasko.encounter
 			this.targets = new Array();
 		}
 		
-		public function setSource(character:Character):void {
-			this.source = character;
+		public function setSource(entity:EncounterEntity):void {
+			this.source = entity;
 		}
 		
-		public function addTarget(character:Character):void {
-			this.targets.push(character);
+		public function addTarget(entity:EncounterEntity):void {
+			this.targets.push(entity);
 		}
 		
-		public function setTargets(characters:Array):void {
-			this.targets = ArrayUtil.createUniqueCopy(this.targets.concat(characters));
+		public function setTargets(entities:Array):void {
+			this.targets = ArrayUtil.createUniqueCopy(this.targets.concat(entities));
 		}
 		
 		public function getTargets():Array {
 			return targets;
 		}
 		
-		public function getSource():Character {
+		public function getSource():EncounterEntity {
 			return source;
 		}
 		
@@ -47,7 +47,7 @@ package com.lasko.encounter
 		
 		//override these
 		public function getName():String { return 'base';  }
-		public function execute():void {}
+		public function execute(callback:Function):void {}
 	}
 
 }

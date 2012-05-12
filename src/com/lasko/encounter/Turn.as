@@ -48,8 +48,10 @@ package com.lasko.encounter
 			var combatAction:CombatActionBase = goodEntities[index].getAction();
 			if (combatAction) {
 				Encounter.debugOut(goodEntities[index].getCharacter().name + "'s action is: " + combatAction.getName());
-				combatAction.execute();
-				doMemberAction(index + 1);
+				combatAction.execute(function():void {
+					doMemberAction(index + 1);	
+				});
+				
 /*				switch(party[index].action) {
 					case 'spell':
 						if(party[index].target > 0) { //targetting an enemy

@@ -16,20 +16,20 @@
     </define>
     <define append="true">
       <name>CONFIG::timeStamp</name>
-      <value>'5/10/2012'</value>
+      <value>'5/12/2012'</value>
     </define>
     <verbose-stacktraces>true</verbose-stacktraces>
     <source-path append="true">
-      <path-element>D:\dev\saganrpg\src</path-element>
+      <path-element>C:\Users\John Combat\dev\srpg\src</path-element>
       <path-element>C:\Program Files (x86)\FlashDevelop\Library\AS3\classes</path-element>
     </source-path>
     <library-path append="true">
-      <path-element>D:\dev\saganrpg\src\greensock.swc</path-element>
-      <path-element>D:\dev\saganrpg\src\D.eval-1.1.swc</path-element>
+      <path-element>C:\Users\John Combat\dev\srpg\src\greensock.swc</path-element>
+      <path-element>C:\Users\John Combat\dev\srpg\src\D.eval-1.1.swc</path-element>
     </library-path>
   </compiler>
   <file-specs>
-    <path-element>D:\dev\saganrpg\src\Main.mxml</path-element>
+    <path-element>C:\Users\John Combat\dev\srpg\src\Main.mxml</path-element>
   </file-specs>
   <default-background-color>#FFFFFF</default-background-color>
   <default-frame-rate>30</default-frame-rate>

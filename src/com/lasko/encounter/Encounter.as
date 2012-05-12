@@ -12,6 +12,7 @@
 	import flash.events.KeyboardEvent;
 	import flash.text.TextField;
 	import flash.ui.Keyboard;
+	
 	import com.greensock.*;
 	import com.greensock.easing.*;
 	import flash.utils.Timer;
@@ -272,9 +273,9 @@
 
 			var character:Character = goodEntities[selectedMember].getCharacter();
 			var action:CombatActionBase = goodEntities[selectedMember].getAction();
-			var targetCharacter:Character = selectedTarget > 0 ? badEntities[selectedTarget - 1].getCharacter() : goodEntities[Math.abs(selectedTarget) - 1].getCharacter();
-			action.addTarget(targetCharacter);
-			debugOut(character.name + ' (' + selectedMember + ') targets: ' + targetCharacter.name + ' (' + selectedTarget + ')');
+			var targetEntity:EncounterEntity = selectedTarget > 0 ? badEntities[selectedTarget - 1] : goodEntities[Math.abs(selectedTarget) - 1];
+			action.addTarget(targetEntity);
+			debugOut(character.name + ' (' + selectedMember + ') targets: ' + targetEntity.getCharacter().name + ' (' + selectedTarget + ')');
 			selectTarget('enemy', -1);
 
 			//if all party members have chosen an action + target, do turn
@@ -308,7 +309,7 @@
 			var selectedCharacter:Character = selectedEntity.getCharacter();
 			var action:CombatActionWeapon = new CombatActionWeapon();
 			action.setWeapon(selectedCharacter.combat.getEquippedWeapon());
-			action.setSource(selectedCharacter);
+			action.setSource(selectedEntity);
 			selectedEntity.setAction(action);
 			
 			menus.switchBox(null);
@@ -580,193 +581,7 @@ trace('removing encounter from stage');
 		/***************** GRAPHICS STUFF ********************/
 
       
-		private function showCombatAnimation(character:Object, callback:Function):void
-		{
-			showCombatAttack(character, function(e:Event):void { 
-				var targetted:Object = e.target.params.character.target > 0 ? badEntities[e.target.params.character.target - 1] : goodEntities[Math.abs(e.target.params.character.target) - 1];
-				showCombatHit(targetted, function(e:Event):void { 
-					//move char back to original position, then callback
-					TweenMax.to(character.sprite, .5, { x:character.original_x, ease:Expo.easeInOut, onComplete: callback, onCompleteParams: [e]}); 
-				});
-			});
-		}
-      
-		private function showSpellAnimation(character:Object, callback:Function):void
-		{
-			showSpellCast(character, function():void { 
-				TweenMax.to(character.sprite, .5, { x:character.original_x, ease:Expo.easeInOut }); //move char back to original pos
-				callback();
-			});
-		}
-      
-		//shows "pow" graphic on character that got hit by melee
-		private function showCombatHit(character:Object, callback:Function):void
-		{
-			TweenMax.to(character.bitmap,0.1,{repeat:2, y:1+Math.random()*4, x:1+Math.random()*4, delay:0.1, ease:Expo.easeInOut});
-			TweenMax.to(character.bitmap, 0.1, { y:Math.random() * 4, x:Math.random() * 4, delay:0.3,/* onComplete:onFinishTween,*/ ease:Expo.easeInOut } );
-
-			var hitBitmap:Bitmap = new Bitmap(new BitmapData(48, 48));
-			hitBitmap.bitmapData.copyPixels(
-				Global.tileset48, 
-				new Rectangle((340 % 17) * 48, (int(340/17)) * 48, character.bitmap.width, character.bitmap.height),
-				new Point(0, 0)
-			);
-			hitBitmap.x = character.sprite.width / 2 - 48 / 2;
-			hitBitmap.y = character.sprite.height / 2 - 48 / 2;
-			character.sprite.addChild(hitBitmap);
-			hitBitmap.name = "hitBitmap";
-
-			var hitTimer:Timer = new MyTimer(300, 1);
-			hitTimer.addEventListener(TimerEvent.TIMER, function(e:Event):void {
-				character.sprite.removeChild(character.sprite.getChildByName("hitBitmap"));
-			});
-			hitTimer.addEventListener(TimerEvent.TIMER_COMPLETE, callback);
-			hitTimer.start();
-		}
-      
-		//swings a weapon behind a character (or do whatever frames the weapon specifies)
-		private function showCombatAttack(character:Object, callback:Function):void
-		{
-			var weapon:Item = character.character.combat.getEquippedWeapon();
-			character.animation = {
-				item: weapon,
-				frames: weapon.getAttackFrames()
-			}
-			character.state = "attacking";
-
-			TweenMax.to(character.sprite, .5, { 
-				x:x - 50, ease:Expo.easeInOut, onComplete: function():void {
-					var attackAnimTimer:MyTimer = new MyTimer(100, character.animation.frames.length+1, {character:character});
-					attackAnimTimer.addEventListener(TimerEvent.TIMER, attackTimerFired);
-					attackAnimTimer.addEventListener(TimerEvent.TIMER_COMPLETE, callback);
-					attackAnimTimer.start();
-				}
-			});
-		}
-      
-		//character casts a spell
-		private function showSpellCast(character:Object, callback:Function):void
-		{
-			character.state = "casting";
-
-			TweenMax.to(character.sprite, .5, { 
-				x:x - 50, ease:Expo.easeInOut, onComplete: function():void {
-					callback();
-				}
-			});
-		}
-      
-      //called when weapon swing animation is updated
-      private function attackTimerFired(e:Event):void
-      {
-         var char:Object = e.target.params.character;
-         var frame:Object = char.animation.frames[e.target.currentCount - 1];
-         
-         if(frame) {
-            var hitBitmap:Bitmap = char.sprite.getChildByName("hitBitmap") ? char.sprite.getChildByName("hitBitmap") : new Bitmap(new BitmapData(frame.width, frame.height));
-            hitBitmap.name = "hitBitmap";
-            hitBitmap.bitmapData.copyPixels(
-               Global.tileset48, 
-               new Rectangle((frame.index % 17) * 48, (int(frame.index/17)) * 48, frame.width, frame.height),
-               new Point(0, 0)
-            );
-            hitBitmap.x = -frame.origin_x + frame.offset_x;
-            hitBitmap.y = -frame.origin_y + frame.offset_y;
-            if (!char.sprite.contains(hitBitmap)) { char.sprite.addChildAt(hitBitmap, 0); }
-            if (frame.hide) { char.sprite.getChildAt(1).visible = false; }
-         } else { //animation done
-            char.sprite.getChildAt(1).visible = true;
-            char.sprite.removeChild(char.sprite.getChildByName("hitBitmap"));
-         }
-      }
-      
-      private function doEnemyDeathAnimation(index:int):void
-      {
-debugOut('doing enemy death for enemy ' + index);
-         var sprite:Sprite = badEntities[index].sprite;
-         var bitmap:Bitmap = badEntities[index].bitmap;
-         var bmd:BitmapData = bitmap.bitmapData;
-         
-         var pass1:Bitmap = new Bitmap(new BitmapData(bmd.width, bmd.height, true, 0x00000000));
-         var pass2:Bitmap = new Bitmap(new BitmapData(bmd.width, bmd.height, true, 0x00000000));
-         
-         var mask:Sprite = new Sprite();
-         
-         //clear sprite
-         sprite.removeChild(bitmap);
-         
-         //mask for clipping
-         mask.graphics.beginFill(0, 1);  
-         mask.graphics.drawRect(0, 0, bitmap.width, bitmap.height);  
-         mask.graphics.endFill();  
-         
-         for (var i:int = 0; i < bmd.height; i++) {
-            if (i % 2) {
-               pass1.bitmapData.copyPixels(bmd, new Rectangle(0, i, bmd.width, 1), new Point(0, i));
-            } else {
-               pass2.bitmapData.copyPixels(bmd, new Rectangle(0, i, bmd.width, 1), new Point(0, i), null, null, true);
-            }
-         }
-         
-         sprite.addChild(mask);
-         sprite.addChild(pass1);
-         sprite.addChild(pass2);
-         pass1.mask = mask;
-         pass2.mask = mask;
-         
-         TweenMax.to(pass1, 8, { x: -bitmap.width });
-         TweenMax.to(pass2, 8, { x: bitmap.width });
-         TweenMax.to(pass1, 1, { alpha: 0 } );
-         TweenMax.to(pass2, 1, { alpha: 0 } );
-         
-         //Ghost!
-         var ghostTimer:MyTimer;
-         var ghost:Sprite = new Sprite();
-         var ghostFrames:Array = [];
-         var ghostFrame:int = 0;
-         ghostFrames[0] = new Bitmap(new BitmapData(48, 48 * 2, true));
-         ghostFrames[1] = new Bitmap(new BitmapData(48, 48 * 2, true));
-         ghostFrames[2] = new Bitmap(new BitmapData(48, 48*2, true));
-         ghostFrames[0].bitmapData.copyPixels(
-            Global.tileset48, 
-            new Rectangle((330 % 17) * 48, (int(330/17)) * 48, 48, 48*2),
-            new Point(0, 0)
-         );
-         ghostFrames[1].bitmapData.copyPixels(
-            Global.tileset48, 
-            new Rectangle((331 % 17) * 48, (int(331/17)) * 48, 48, 48*2),
-            new Point(0, 0)
-         );
-         ghostFrames[2].bitmapData.copyPixels(
-            Global.tileset48, 
-            new Rectangle((332 % 17) * 48, (int(332/17)) * 48, 48, 48*2),
-            new Point(0, 0)
-         );
-         ghostFrames[0].visible = true;
-         ghostFrames[1].visible = false;
-         ghostFrames[2].visible = false;
-         ghost.addChild(ghostFrames[0]);
-         ghost.addChild(ghostFrames[1]);
-         ghost.addChild(ghostFrames[2]);
-         ghost.x = badClip.x + sprite.x + sprite.width / 2 - ghost.width / 2;
-         ghost.y = badClip.y + sprite.y + sprite.height / 2 - ghost.height / 2;
-         //ghost.alpha = 0;
-         addChild(ghost);
-         
-         //ease:Back.easeOut, 
-         //TweenMax.to(ghost, .3, { alpha: 1, onComplete:function():void {
-         ghostTimer = new MyTimer(100, 20, {'ghostFrames':ghostFrames, 'frame':ghostFrame} );
-         ghostTimer.addEventListener(TimerEvent.TIMER, function(e:Event):void {
-            e.target.params.ghostFrames[e.target.params.frame].visible = false;
-            if (++e.target.params.frame > ghostFrames.length - 1) { e.target.params.frame = 0; }
-            e.target.params.ghostFrames[e.target.params.frame].visible = true;
-         });
-         ghostTimer.start();
-         //TweenMax.to(ghost, 1, { alpha: 1 } );
-         TweenMax.to(ghost, 4, { y: -ghost.height } );
-         TweenMax.to(ghost, 1, { delay: .5, alpha: 0 } );
-         //}});
-      }
+		
       
       private function partySelectorTimerFired(e:Event):void
       {
