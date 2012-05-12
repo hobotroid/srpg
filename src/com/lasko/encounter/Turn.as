@@ -1,15 +1,20 @@
 package com.lasko.encounter 
 {
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	
+	import com.lasko.util.CustomEvent;
 	import com.lasko.entity.Character;
+	import com.lasko.encounter.EncounterEntity;
 	
-	public class Turn 
+	public class Turn extends EventDispatcher
 	{
+		public static const EVENT_TURN_DONE:String = "turn_done";
+		
 		private var goodEntities:Array;
 		private var badEntities:Array;
 		
-		public function Turn(goodEntities:Array, badEntities:Array) 
+		public function Turn(goodEntities:Array, badEntities:Array)
 		{
 			this.goodEntities = goodEntities;
 			this.badEntities = badEntities;
@@ -32,17 +37,19 @@ package com.lasko.encounter
 		
 		private function doMemberAction(index:int):void
 		{
-			//all actions done, start new turn
-			if (index > goodEntities.length - 1) { 
-				//endTurn();
+			//all actions done
+			if (index > goodEntities.length - 1) {
+				dispatchEvent(new CustomEvent(Turn.EVENT_TURN_DONE));
 				return;
 			}
 
+			//not all actions done
 			var results:Object;
-			var combatAction:CombatActionBase = goodEntities[index].action;
+			var combatAction:CombatActionBase = goodEntities[index].getAction();
 			if (combatAction) {
-				Encounter.debugOut(goodEntities[index].character.name + "'s action is: " + combatAction.getName());
+				Encounter.debugOut(goodEntities[index].getCharacter().name + "'s action is: " + combatAction.getName());
 				combatAction.execute();
+				doMemberAction(index + 1);
 /*				switch(party[index].action) {
 					case 'spell':
 						if(party[index].target > 0) { //targetting an enemy
@@ -69,7 +76,7 @@ package com.lasko.encounter
 		private function doEnemyAction(index:int):void
 		{
 			var results:Object;
-			var combatAction:CombatActionBase = badEntities[index].action;
+			var combatAction:CombatActionBase = badEntities[index].getAction();
 			if (combatAction) {
 					Encounter.debugOut(badEntities[index].getCharacter().name + "'s action is: " + badEntities[index].action);
 					switch(badEntities[index].action) {
@@ -91,7 +98,7 @@ package com.lasko.encounter
 			badEntities[index].update();
 		}
       
-		private function start():void
+		public function execute():void
 		{
 			Encounter.debugOut('startTurn() - actions chosen for all party members + enemies, initiating turn');
 

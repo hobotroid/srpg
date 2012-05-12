@@ -1,4 +1,5 @@
 ﻿package com.lasko.encounter {
+	import com.lasko.util.CustomEvent;
 	import flash.display.Sprite;
 	import flash.display.Stage;
 	import flash.display.Bitmap;
@@ -66,7 +67,8 @@
 			var entity:EncounterEntity;
 			var sprite:Sprite;
 			
-			addEventListener(Event.ADDED_TO_STAGE, init);
+			mouseEnabled = false;
+			addEventListener(Event.ADDED_TO_STAGE, newTurn);
 			goodParty = goodies;
 			badParty = baddies;
          
@@ -148,6 +150,7 @@
 			debugField.background = true;
 			debugField.backgroundColor = 0xffffff;
 			debugField.visible = true;
+			debugField.mouseEnabled = false;
 			addChild(debugField);
 		 
 			//new bottom menu
@@ -227,15 +230,21 @@
 			});*/
 		}
 
-		private function init(e:Event):void {
+		private function newTurn(e:Event=null):void {
 			stage.focus = this;
 			this.turn = new Turn(goodEntities, badEntities);
+			this.turn.addEventListener(Turn.EVENT_TURN_DONE, turnFinishedEvent);
 			
 			//give player control for picking party actions
 			menus.switchBox("party");
 			selectNextMember();
 			state = "choosing_member";
 			menus.addKeyListener();
+		}
+		
+		private function turnFinishedEvent(e:CustomEvent):void {
+			debugOut('TURN DONE EVENT!');
+			newTurn();
 		}
 
 		private function partySelected(entity:EncounterEntity):void
@@ -280,8 +289,9 @@
 				}
 			}
 			if (actionCount == goodEntities.length) {
-				turn = new Turn(goodEntities, badEntities);
+				//turn = new Turn(goodEntities, badEntities);
 				state = "turn";
+				this.turn.execute();
 				partySelector.visible = false;
 				return;
 			}
