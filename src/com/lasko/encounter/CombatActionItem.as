@@ -24,6 +24,8 @@ package com.lasko.encounter
 			var targets:Array = this.getTargets();
 			var source:EncounterEntity = this.getSource();
 			
+			
+									//results = party[index].item.useItem( { target: enemies[party[index].target] } );
 			for each(var targetEntity:EncounterEntity in targets) {
 				//var result:Object = source.combat.sendAttack(targetCharacter, this.weaponItem);
 				//trace(result.message);

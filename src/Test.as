@@ -714,7 +714,7 @@
 		
 		private function checkRandomEncounter(force:Boolean=false):void
 		{
-			if (++randomEncounterCounter >= randomEncounterIndex || force)
+			if (/*++randomEncounterCounter >= randomEncounterIndex || */force)
 			{
 				trace('starting random encounter');
 				stopGameTimer();

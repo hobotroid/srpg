@@ -15,8 +15,8 @@
 			trace("casting spell " + name + " on " + target.name);
 			switch(name.toLowerCase()) {
 				case 'millions and millions!':
-				trace("spell did "+50+" damage");
-				   target.combat.receiveAttack(50);
+					trace("spell did "+500+" damage");
+				   target.combat.receiveAttack(500);
 				break;
 				case 'full heal':
 				trace("spell fully healed "+target.name);

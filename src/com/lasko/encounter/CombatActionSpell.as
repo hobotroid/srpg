@@ -23,15 +23,13 @@ package com.lasko.encounter
 		public override function execute(callback:Function):void {
 			var targets:Array = this.getTargets();
 			var source:EncounterEntity = this.getSource();
+			var sourceCharacter:Character = source.getCharacter();
 			
 			for each(var targetCharacter:EncounterEntity in targets) {
-				//var result:Object = source.combat.sendAttack(targetCharacter, this.weaponItem);
-				//trace(result.message);
+				var results:Object = sourceCharacter.combat.sendSpell(this.spell, targetCharacter.getCharacter());
 			}
 
-			/*showCombatAnimation(party[index], function(e:Event):void {
-				doMemberAction(index + 1);
-			});*/
+			source.showSpellAnimation(callback);
 		}
 	}
 

@@ -245,7 +245,11 @@
 		
 		private function turnFinishedEvent(e:CustomEvent):void {
 			debugOut('TURN DONE EVENT!');
-			newTurn();
+			if (this.turn.getAllEnemiesKilled()) {
+				endCombat();
+			} else {
+				newTurn();
+			}
 		}
 
 		private function partySelected(entity:EncounterEntity):void
@@ -259,7 +263,8 @@
 			menus.addBox({x:partyBox.x + 10, y:partyBox.y + partyBox.height/2 - ACTIONS_H/2, width:ACTIONS_W, height:ACTIONS_H, label:"actions"});
 			menus.addMenuText("actions", {label:"Attack", callback:attackSelected, callbackParams:entity, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
 			menus.addMenuText("actions", {label:"Science", callback:scienceSelected, callbackParams:entity, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
-			menus.addMenuText("actions", {label:"Things", callback:thingsSelected, callbackParams:entity, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
+			menus.addMenuText("actions", {label:"Things", callback:thingsSelected, callbackParams:entity, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } } );
+			menus.addMenuText("actions", {label:"Pass", callback:passSelected, callbackParams:entity, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
 			state = "choosing_actions";
 			menus.switchBox("actions");
 		}
@@ -374,6 +379,7 @@
 			debugOut("spell " + spell.name + " selected, choosing target...");
 			var action:CombatActionSpell = new CombatActionSpell();
 			action.setSpell(spell);
+			action.setSource(goodEntities[selectedMember]);
 			goodEntities[selectedMember].setAction(action);
 			
 			menus.switchBox(null);
@@ -382,6 +388,16 @@
 			menus.removeKeyListener();
 			state = "choosing_target";
 			addKeyListener();
+		}
+      
+		private function passSelected(entity:EncounterEntity):void
+		{
+			debugOut("pass selected");
+			var action:CombatActionPass = new CombatActionPass();
+			action.setSource(goodEntities[selectedMember]);
+			goodEntities[selectedMember].setAction(action);
+			
+			this.targetSelected();
 		}
       
 		private function itemSelected(item:Item):void
@@ -413,14 +429,16 @@
 			var sprite:Sprite;
 			if (type == 'enemy') {	//targetting enemy
 				sprite = badEntities[index - 1].getSprite();
+				pointer.x = badClip.x + sprite.x;
+				pointer.y = badClip.y + sprite.y - pointer.height - 5;
 				selectedTarget = index;
 			} else {				//targetting ally
 				sprite = goodEntities[index - 1].getSprite();
+				pointer.x = goodClip.x + sprite.x;
+				pointer.y = goodClip.y + sprite.y - pointer.height - 5;
 				selectedTarget = -index;
 			}
-			
-			pointer.x = goodClip.x + sprite.x;
-			pointer.y = goodClip.y + sprite.y - pointer.height - 5;
+
 			pointer.visible = true;
 		}
 
@@ -509,27 +527,27 @@
       
 		public function destroy():void
 		{
-trace('removing encounter from stage');
+			trace('removing encounter from stage');
 			Global.game.endEncounter(this);
 		}
       
 
       
-      /************************** KEY LISTENER STUFF ****************************/
-      public function addKeyListener(e:Event=null):void
-      {
-         if(!hasEventListener(KeyboardEvent.KEY_UP)) { 
-            addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true); 
-         }
-         stage.focus = this;
-      }
-      
-      public function removeKeyListener():void
-      {
-         if(hasEventListener(KeyboardEvent.KEY_UP)) { 
-            removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
-         }
-      }
+		/************************** KEY LISTENER STUFF ****************************/
+		public function addKeyListener(e:Event=null):void
+		{
+			if(!hasEventListener(KeyboardEvent.KEY_UP)) { 
+				addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true); 
+			}
+			stage.focus = this;
+		}
+
+		public function removeKeyListener():void
+		{
+			if(hasEventListener(KeyboardEvent.KEY_UP)) { 
+				removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+			}
+		}
       
 		private function keyUpHandler(e:KeyboardEvent):void
 		{
@@ -579,34 +597,30 @@ trace('removing encounter from stage');
 		}
       
 		/***************** GRAPHICS STUFF ********************/
+		private function partySelectorTimerFired(e:Event):void
+		{
+			//figure out what frame the selector animation is on & set that frame visible, set all others hidden
+			var frame:int = -1;
+			for (var i:int = 0; i < partySelector.numChildren; i++) {
+				if (partySelector.getChildAt(i).visible) {
+					partySelector.getChildAt(i).visible = false;
+					if (partySelector.numChildren > i + 1) {
+						frame = i + 1;
+					} else {
+						frame = 0;
+					}
+				}
+			}
+			if (frame == -1) { frame = 0; };
+			partySelector.getChildAt(frame).visible = true;
 
-      
-		
-      
-      private function partySelectorTimerFired(e:Event):void
-      {
-         //figure out what frame the selector animation is on & set that frame visible, set all others hidden
-         var frame:int = -1;
-         for (var i:int = 0; i < partySelector.numChildren; i++) {
-            if (partySelector.getChildAt(i).visible) {
-               partySelector.getChildAt(i).visible = false;
-               if (partySelector.numChildren > i + 1) {
-                  frame = i + 1;
-               } else {
-                  frame = 0;
-               }
-            }
-         }
-         if (frame == -1) { frame = 0; };
-         partySelector.getChildAt(frame).visible = true;
-         
-         //figure out if this frame should be in front of or behind the character
-         if (frame > 5) {
-            goodClip.setChildIndex(partySelector, menus.getSelectedIndex("party"));
-         } else {
-			goodClip.setChildIndex(partySelector, menus.getSelectedIndex("party")+1);
-         }
-      }
+			//figure out if this frame should be in front of or behind the character
+			if (frame > 5) {
+				goodClip.setChildIndex(partySelector, menus.getSelectedIndex("party"));
+			} else {
+				goodClip.setChildIndex(partySelector, menus.getSelectedIndex("party")+1);
+			}
+		}
       
 		private function enemySelectorTimerFired(e:Event):void
 		{

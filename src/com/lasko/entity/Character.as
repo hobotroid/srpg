@@ -79,6 +79,8 @@
 			this.inventory = new Inventory(this.parentParty);
 			//frameTimer.addEventListener(TimerEvent.TIMER, changeFrameEvent);
 			
+			this.setSlot("L. Hand", new Item("Fists"));
+			
 			//character type
 			type = dataXML.type.text();
 			

@@ -1,9 +1,12 @@
 package com.lasko.encounter 
 {
+	import com.adobe.air.crypto.EncryptionKeyGenerator;
+	import flash.automation.ActionGenerator;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
 	import com.lasko.util.CustomEvent;
+	import com.lasko.util.Utils;
 	import com.lasko.entity.Character;
 	import com.lasko.encounter.EncounterEntity;
 	
@@ -13,6 +16,8 @@ package com.lasko.encounter
 		
 		private var goodEntities:Array;
 		private var badEntities:Array;
+		
+		private var allEnemiesKilled:Boolean = false;
 		
 		public function Turn(goodEntities:Array, badEntities:Array)
 		{
@@ -30,113 +35,107 @@ package com.lasko.encounter
 			
 			//choosing enemy targets and actions
 			for (i = 0; i < badEntities.length; i++) {
+				var enemy:EncounterEntity = badEntities[i];
 				//enemies[i].character.combat.determineCombatAction(goodParty);
-				//badEntities[i] = null;
-			}
-		}
-		
-		private function doMemberAction(index:int):void
-		{
-			//all actions done
-			if (index > goodEntities.length - 1) {
-				dispatchEvent(new CustomEvent(Turn.EVENT_TURN_DONE));
-				return;
-			}
-
-			//not all actions done
-			var results:Object;
-			var combatAction:CombatActionBase = goodEntities[index].getAction();
-			if (combatAction) {
-				Encounter.debugOut(goodEntities[index].getCharacter().name + "'s action is: " + combatAction.getName());
-				combatAction.execute(function():void {
-					doMemberAction(index + 1);	
-				});
-				
-/*				switch(party[index].action) {
-					case 'spell':
-						if(party[index].target > 0) { //targetting an enemy
-							results = party[index].character.combat.sendSpell(party[index].spell, enemies[party[index].target - 1].character);
-						} else {				 //targetting an ally
-							results = party[index].character.combat.sendSpell(party[index].spell, party[Math.abs(party[index].target) - 1].character);
-						}
-						showSpellAnimation(party[index], function():void {
-							doMemberAction(index + 1);
-						});
-						debugOut(results.message);
-					break;
-					case 'item':
-						results = party[index].item.useItem( { target: enemies[party[index].target] } );
-						debugOut(results.message);
-					break;
-					default: break;
-				}*/
-			}
-
-			goodEntities[index].update();
-		}
-		
-		private function doEnemyAction(index:int):void
-		{
-			var results:Object;
-			var combatAction:CombatActionBase = badEntities[index].getAction();
-			if (combatAction) {
-					Encounter.debugOut(badEntities[index].getCharacter().name + "'s action is: " + badEntities[index].action);
-					switch(badEntities[index].action) {
-						case 'combat':
-							if(badEntities[index].target > 0) { //targetting an enemy
-								results = badEntities[index].character.combat.sendAttack(badEntities[badEntities[index].target - 1].character);
-							} else {				 	  //targetting an ally
-								results = badEntities[index].character.combat.sendAttack(goodEntities[Math.abs(badEntities[index].target) - 1].character);
-							}
-							//showCombatAnimation(goodEntities[index], function(e:Event):void {
-							//	doEnemyAction(index + 1);
-							//});
-							Encounter.debugOut(results.message);
-						break;
-					default: break;
+				if(enemy.canPerformAction()) {
+					var action:CombatActionWeapon = new CombatActionWeapon();
+					action.setWeapon(enemy.getCharacter().combat.getEquippedWeapon());
+					action.setSource(enemy);
+					action.addTarget(goodEntities[0]);
+					enemy.setAction(action);
+					//trace(enemy.getCharacter().name + ' : ACTION SET TO : ' + action.getName());
+				} else {
+					//trace('CANNOT SET ACTION BECAUSE STATE IS : ' + enemy.getState());
 				}
 			}
-			
-			badEntities[index].update();
 		}
       
 		public function execute():void
 		{
 			Encounter.debugOut('startTurn() - actions chosen for all party members + enemies, initiating turn');
+			var actionsToPerform:Array = [];
+			var allEntities:Array = badEntities.concat(goodEntities);
 
-			doMemberAction(0);
-			doEnemyAction(0);
+			//prepare list of actions, then execute them 1 by 1
+			for each(var entity:EncounterEntity in allEntities) {
+				var action:CombatActionBase = entity.getAction();
+				if (action) {
+					actionsToPerform.push(action);
+				}
+			}
+			
+			//until initiative is implemented, just randomize actions
+			actionsToPerform = Utils.randomizeArray(actionsToPerform);
+			
+			doAction(actionsToPerform);
 		}
       
-		//called after all actions & their animations are done
-		/*private function endTurn():void
+		public function doAction(actions:Array, index:int = 0):void {
+			//all actions done
+			if (index > actions.length - 1) {
+				this.end();
+				return;
+			}
+
+			var action:Object = actions[index];
+			var results:Object;
+			var entity:EncounterEntity = action.getSource();
+			var opposingEntities:Array = entity.getType() == EncounterEntity.TYPE_BAD ? goodEntities : badEntities;
+			if (action && action.verify(opposingEntities)) {
+				Encounter.debugOut(entity.getCharacter().name + "'s action is: " + action.getName());
+				action.execute(function():void {
+					doAction(actions, index + 1);
+				});
+			} else {
+				doAction(actions, index + 1);
+			}
+
+			entity.update();
+		}
+		
+		private function endCheck():void
 		{
-			Encounter.debugOut('endTurn()');
-			var deadCount:int = 0;
-			for (var i:int = 0; i < enemies.length; i++) {
-				var char:Character = enemies[i].character;
+			Encounter.debugOut('turn.endCheck()');
+			var shouldEndTurn:Boolean = true;
+			for (var i:int = 0; i < this.badEntities.length; i++) {
+				var entity:EncounterEntity = this.badEntities[i];
+				var character:Character = entity.getCharacter();
 
-				if(char.conditions[0] && char.conditions[0].isActive()) {
-					char.conditions[0].applyActions();
+				if(character.conditions[0] && character.conditions[0].isActive()) {
+					character.conditions[0].applyActions();
 				}
-				updateCharacter(enemies[i]);
+				entity.update();
 
-				trace(char.name+'\'s STATE: '+char.getStateName());
-				if (char.getStateName() == Global.STATE_DEAD) {
-					if (enemies[i].state != "dead") { 
-						doEnemyDeathAnimation(i);
-						enemies[i].state = "dead"
-					}
+				if (entity.getState() != EncounterEntity.STATE_DEAD) { 
+					shouldEndTurn = false;
+				}
+			}
+			
+			if (shouldEndTurn) {
+				this.end();
+			}
+		}
+		
+		private function end():void {
+			Encounter.debugOut('turn.end()');
+			var deadCount:int = 0;
+			for (var i:int = 0; i < this.badEntities.length; i++) {
+				var entity:EncounterEntity = this.badEntities[i];
+				var character:Character = entity.getCharacter();
+
+				if (character.getStateName() == Global.STATE_DEAD) {
 					deadCount++;
 				}
 			}
 
-			if (deadCount >= enemies.length) {
-				Encounter.debugOut('ALL ENEMIES KILLED - ending combat');
-				//endCombat();
-			} else {
-				newTurn();
+			if (deadCount >= this.badEntities.length) {
+				allEnemiesKilled = true;
 			}
-		}*/
+			dispatchEvent(new CustomEvent(Turn.EVENT_TURN_DONE));
+		}
+		
+		public function getAllEnemiesKilled():Boolean {
+			return this.allEnemiesKilled;
+		}
 	}
 }

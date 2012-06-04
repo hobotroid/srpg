@@ -24,7 +24,7 @@ package com.lasko.encounter
 			return weaponItem;
 		}
 		
-		public override function execute(callback:Function):void {
+		public override function execute(callback:Function):void {			
 			var targets:Array = this.getTargets();
 			var source:EncounterEntity = this.getSource();
 			

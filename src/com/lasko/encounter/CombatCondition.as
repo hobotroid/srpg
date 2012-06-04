@@ -63,7 +63,6 @@ package com.lasko.encounter
       public function applyActions():void
       {
          for each(var action:XML in actions) {
-trace('applying action ' + action.@type + ' to ' + parent.name);
             switch(String(action.@type)) {
                case 'change_frame':
                   parent.anim.setAnimState(action.@value);

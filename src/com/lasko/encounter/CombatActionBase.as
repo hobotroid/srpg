@@ -31,12 +31,48 @@ package com.lasko.encounter
 			return targets;
 		}
 		
+		public function clearTargets():void {
+			targets = [];
+		}
+		
+		public function removeTarget(index:int):void {
+			this.targets.splice(index, 1);
+		}
+		
 		public function getSource():EncounterEntity {
 			return source;
 		}
 		
 		public function hasTargets():Boolean {
 			return this.targets.length > 0;
+		}
+		
+		//1. make sure action performer can perform the action still
+		//2. if it's a single target, make sure the target is alive. if not, choose next viable target
+		public function verify(candidates:Array):Boolean {
+			var sourceEntity:EncounterEntity = this.getSource();
+			if (!sourceEntity.canPerformAction()) { return false; }
+			
+			if (this.targets.length == 1) {
+				if(targets[0].getState() == EncounterEntity.STATE_DEAD) {
+					for each(var entity:EncounterEntity in candidates) {
+						if (entity.getState() != EncounterEntity.STATE_DEAD) {
+							targets[0] = entity;
+							return true;
+						}
+					}
+					clearTargets();
+					return false;
+				}
+			} else {
+				for (var i:int = 0; i < this.targets.length; i++) {
+					if (this.targets[i].getState() == EncounterEntity.STATE_DEAD) {
+						this.removeTarget(i);
+					}
+				}
+			}
+			
+			return true;
 		}
 		
 		public static function makeAction(name:String):Object {
@@ -47,7 +83,7 @@ package com.lasko.encounter
 		
 		//override these
 		public function getName():String { return 'base';  }
-		public function execute(callback:Function):void {}
+		public function execute(callback:Function):void { }
 	}
 
 }

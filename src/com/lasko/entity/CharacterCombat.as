@@ -38,7 +38,6 @@ package com.lasko.entity
 		public function receiveAttack(damage:int):void
 		{
 			character.setHP(character.getHP() - damage);
-			trace(character.name + ": Attack received");
 		}
 		
 		public function sendAttack(dest:Character, item:Item):Object
@@ -53,14 +52,12 @@ package com.lasko.entity
 			{
 				var damageCalc:int = character.str + getWeaponBonus();
 				var damage:int = Utils.randRange(damageCalc, 2 * damageCalc);
-				trace(character.name + ' sent attack to ' + dest.name + ' and hit for ' + damage);
 				dest.combat.receiveAttack(damage);
 				
 				return ({message: "Hit for " + damage + "!", value: damage});
 			}
 			else
 			{
-				trace(character.name + ' sent attack to ' + dest.name + ' but missed.');
 			}
 			
 			return ({message: "Missed!", value: null});
