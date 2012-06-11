@@ -19,6 +19,7 @@ package com.lasko.ui
 	import flash.ui.Keyboard;
    
 	import com.lasko.util.Utils;
+	import com.lasko.Global;
 
 	public class Screen extends TopLevel
 	{

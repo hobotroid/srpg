@@ -1,7 +1,9 @@
 package com.lasko.encounter 
 {
 	import flash.events.Event;
+	
 	import com.lasko.entity.Character;
+	import com.lasko.Global;
 	
 	public class CombatActionWeapon extends CombatActionBase
 	{
@@ -23,8 +25,8 @@ package com.lasko.encounter
 		public function getWeapon():Item {
 			return weaponItem;
 		}
-		
-		public override function execute(callback:Function):void {			
+	
+		public override function executeChild(callback:Function):void {			
 			var targets:Array = this.getTargets();
 			var source:EncounterEntity = this.getSource();
 			
@@ -32,11 +34,35 @@ package com.lasko.encounter
 				var result:Object = source.getCharacter().combat.sendAttack(targetEntity.getCharacter(), this.weaponItem);
 				trace(result.message);
 			}
-
-			source.showCombatAnimation(callback);
-			/*showCombatAnimation(party[index], function(e:Event):void {
-				doMemberAction(index + 1);
-			});*/
+			
+			source.setState(EncounterEntity.STATE_ATTACKING);
+			executeAnimation(function():void {
+				source.setState(EncounterEntity.STATE_WAITING);
+				callback();
+			});
+		}
+		
+		private function executeAnimation(callback:Function):void {
+			var sourceEntity:EncounterEntity = this.getSource();
+			
+			sourceEntity.showCombatAttack(function():void {
+				var hitsFinished:int = 0;
+				var targets:Array = getTargets();
+				for each(var targetEntity:EncounterEntity in targets) { 
+					targetEntity.showCombatHit(function():void {
+						if (hitsFinished++ >= targets.length - 1) {
+							if (targetEntity.getCharacter().getStateName() == Global.STATE_DEAD && targetEntity.getState() != EncounterEntity.STATE_DEAD) {
+								targetEntity.die();
+								targetEntity.doEnemyDeathAnimation(function():void {
+									sourceEntity.returnToPosition(callback);
+								});
+							} else {							
+								sourceEntity.returnToPosition(callback);
+							}
+						}
+					});
+				}
+			});
 		}
 	}
 

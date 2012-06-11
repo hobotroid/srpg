@@ -20,7 +20,7 @@ package {
 		{
 			TopLevel.stage = this.stage;
 			TopLevel.root = this;
-			mouseEnabled = false;
+			this.mouseEnabled = false;
 		}
 	}
 }

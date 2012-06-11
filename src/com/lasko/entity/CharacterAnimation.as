@@ -5,6 +5,7 @@ package com.lasko.entity
 	
 	import com.lasko.entity.Character;
 	import com.lasko.util.Utils;
+	import com.lasko.Global;
 
 	public class CharacterAnimation 
 	{

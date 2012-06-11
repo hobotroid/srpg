@@ -11,6 +11,8 @@
    import flash.geom.Point;
    
    import com.lasko.entity.Character;
+   import com.lasko.Global;
+   import com.lasko.GameGraphics;
 
    public class CharacterScreen extends Screen {
       private var party:Party;
@@ -28,7 +30,7 @@
             if(portrait) { 
                var portraitImage:Bitmap = new Bitmap(new BitmapData(portrait.@width, portrait.@height));
                portraitImage.bitmapData.copyPixels(
-                  Global.tileset48, 
+                  GameGraphics.tileset48, 
                   new Rectangle((portrait.@index % 17) * 48, (int(portrait.@index/17)) * 48, portrait.@width, portrait.@height),
                   new Point(0, 0)
                );

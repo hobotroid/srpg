@@ -1,15 +1,71 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" initialize="onInit()" layout="absolute" width="640" height="480">
-<mx:Script>
-<![CDATA[
-	import Test;
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+                       xmlns:s="library://ns.adobe.com/flex/spark"
+                       xmlns:mx="library://ns.adobe.com/flex/mx"
+					   width="640" 
+					   height="480"
+					   title="SRPG"
+					   windowComplete="init();">
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+	<![CDATA[
+		import flash.display.Bitmap;
+		import flash.display.NativeWindow;
+		import flash.display.Stage3D;
+		import flash.events.Event;
+		
+		import mx.events.AIREvent;
+		import mx.core.Window;
+		
+		import com.lasko.Global;
+		import com.lasko.ui.DebugWindow;
+		import com.lasko.GameGraphics;
+		import com.lasko.Fonts;
+		import com.lasko.Game;
+		import com.lasko.GameInput;
 
-	private function onInit():void
-	{
-		Fonts.init();
-		var myMain:Test = new Test();
-		this.rawChildren.addChild(myMain);
-	}
-]]>
-</mx:Script>
-</mx:Application>
+		[Embed(source = "../maps/plane2.tmx", mimeType = "application/octet-stream")]
+		protected var mapPlaneClass:Class;
+		[Embed(source="../characters.xml",mimeType="application/octet-stream")]
+		public static var charactersXMLClass:Class;
+		[Embed(source="../items.xml",mimeType="application/octet-stream")]
+		public static var itemsXMLClass:Class;
+
+		private function init():void
+		{
+			XML.ignoreWhitespace = true;
+			XML.prettyIndent = 0;
+			
+			GameGraphics.init();
+			com.lasko.GameInput.init(this.nativeApplication);
+			Fonts.init();
+			Global.addMapXML('plane2', XML(new mapPlaneClass()));
+			Global.setCharactersXML(XML(new charactersXMLClass()));
+			Global.setItemsXML(XML(new itemsXMLClass()));
+			
+			var game:Game = new Game();
+			this.stage.addChild(game);
+			
+			var nativeWindow:NativeWindow = stage.nativeWindow;
+			var debugWindow:DebugWindow = new DebugWindow();
+			debugWindow.width  = 300;
+			debugWindow.open(false);
+			debugWindow.move(nativeWindow.bounds.right, nativeWindow.bounds.top);
+			debugWindow.height = nativeWindow.height;
+			debugWindow.addEventListener(Event.CLOSE, function(e:Event):void {
+				nativeWindow.close();
+			});
+			nativeWindow.addEventListener(Event.CLOSE, function(e:Event):void {
+				debugWindow.close();
+			});
+			nativeWindow.alwaysInFront = true;
+			Global.setDebugWindow(debugWindow);
+		}
+	]]>
+	</fx:Script>
+	
+</s:WindowedApplication>

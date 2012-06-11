@@ -20,12 +20,11 @@ package com.lasko.encounter
 			this.item = item;
 		}
 		
-		public override function execute(callback:Function):void {
+		public override function executeChild(callback:Function):void {
 			var targets:Array = this.getTargets();
 			var source:EncounterEntity = this.getSource();
-			
-			
-									//results = party[index].item.useItem( { target: enemies[party[index].target] } );
+				
+			//results = party[index].item.useItem( { target: enemies[party[index].target] } );
 			for each(var targetEntity:EncounterEntity in targets) {
 				//var result:Object = source.combat.sendAttack(targetCharacter, this.weaponItem);
 				//trace(result.message);

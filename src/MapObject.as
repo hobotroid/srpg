@@ -5,6 +5,8 @@ package {
    import flash.geom.Rectangle;
    import flash.utils.Timer;
    import flash.events.TimerEvent;
+   
+   import com.lasko.Global;
 
    public class MapObject {
       public var type:int;
@@ -84,13 +86,13 @@ trace('MapObject::useItem(), type='+type);
                      switch(lootTokens[0]) {
                         case "money":
                            var gained:int = lootTokens[1] == "random" ? Global.getRandomMoney() : lootTokens[1];
-                           Global.game.party.addMoney(gained);
+                           Global.game.getParty().addMoney(gained);
                            //Global.game.startDialog(null, Global.makeDialog("You found " + gained + " gift cards!"));
                            Global.game.startDialog(null, Global.makeDialog("You found " + gained + " gift cards!"));
                            break;
                         case "item":
                            var newItem:Item = new Item(lootTokens[1]);
-                           Global.game.party.inventory.addItem(newItem);
+                           Global.game.getParty().inventory.addItem(newItem);
                            //Global.game.startDialog(null, Global.makeDialog("You found "+newItem.name+"!"));
                            Global.game.startDialog(null, Global.makeDialog("You found "+newItem.name+"!"));
                            break;

@@ -1,8 +1,10 @@
 ﻿package {
+	
+	import com.lasko.Global;
+	
 	public class Item {
 		public var name:String;
 		public var isCombatUsable:Boolean = false;
-		private static var map:Map = Global.game.getActiveMap();
 		private var icons:Object = { "small": 0, "big": 0 };
 
 		public function Item(name:String) {
@@ -60,6 +62,7 @@
                ];
                break;
             case "Nunchucks":
+			   var map:Map = Global.game.getActiveMap();
                frames = [
                   { index: 341, width: 96, height: 96, origin_x: 30, origin_y: 85, offset_x: map.tileWidth/4, offset_y: map.tileHeight/2 },
                   { index: 343, width: 96, height: 96, origin_x: 30, origin_y: 85, offset_x: map.tileWidth/4, offset_y: map.tileHeight/2 },

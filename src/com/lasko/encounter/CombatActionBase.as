@@ -9,6 +9,7 @@ package com.lasko.encounter
 	{
 		private var source:EncounterEntity;
 		private var targets:Array;
+		private var targetCandidates:Array;
 		
 		public function CombatActionBase():void
 		{
@@ -25,6 +26,10 @@ package com.lasko.encounter
 		
 		public function setTargets(entities:Array):void {
 			this.targets = ArrayUtil.createUniqueCopy(this.targets.concat(entities));
+		}
+		
+		public function setTargetCandidates(entities:Array):void {
+			this.targetCandidates = entities;
 		}
 		
 		public function getTargets():Array {
@@ -49,13 +54,13 @@ package com.lasko.encounter
 		
 		//1. make sure action performer can perform the action still
 		//2. if it's a single target, make sure the target is alive. if not, choose next viable target
-		public function verify(candidates:Array):Boolean {
+		public function verify():Boolean {
 			var sourceEntity:EncounterEntity = this.getSource();
 			if (!sourceEntity.canPerformAction()) { return false; }
 			
 			if (this.targets.length == 1) {
 				if(targets[0].getState() == EncounterEntity.STATE_DEAD) {
-					for each(var entity:EncounterEntity in candidates) {
+					for each(var entity:EncounterEntity in this.targetCandidates) {
 						if (entity.getState() != EncounterEntity.STATE_DEAD) {
 							targets[0] = entity;
 							return true;
@@ -81,9 +86,19 @@ package com.lasko.encounter
 			return new classReference();
 		}
 		
+		public function execute(callback:Function):void {
+			if (this.verify()) {
+				this.getSource().moveToActionPosition(function():void {
+					executeChild(callback);
+				});
+			} else {
+				callback();
+			}
+		}
+		
 		//override these
 		public function getName():String { return 'base';  }
-		public function execute(callback:Function):void { }
+		public function executeChild(callback:Function):void { }
 	}
 
 }

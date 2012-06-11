@@ -9,6 +9,7 @@
 
 	import com.lasko.ui.Screen;
 	import com.lasko.entity.Character;
+	import com.lasko.Global;
 
 	public class EquipmentScreen extends Screen
 	{

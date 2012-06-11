@@ -8,6 +8,8 @@
    
    import com.lasko.ui.*
    import com.lasko.util.Utils;
+   import com.lasko.Global;
+   import com.lasko.Game;
 
    public class DialogBox extends Screen {
       private var options:Array = new Array();
@@ -63,7 +65,7 @@ trace(actionType);
                   break;
                case "encounter":
                   removeKeyListener();
-                  Global.game.startEncounter(Test(parent).party, npc);
+                  Global.game.startEncounter(Game(parent).getParty(), npc);
                   //Test(parent).endDialog();
                   break;
                case "dialog":
@@ -90,7 +92,7 @@ trace(actionType);
             }
          } else {
             npc.leader.setDosile();
-            Test(parent).endDialog();
+            Game(parent).endDialog();
          }
       }
       

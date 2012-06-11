@@ -1,0 +1,53 @@
+package com.lasko 
+{	
+	import flash.display.BitmapData;
+	import flash.display.Bitmap;
+	import flash.geom.Rectangle;
+	import flash.geom.Point;
+	
+	import mx.core.BitmapAsset;
+	
+	import com.lasko.Global;
+		
+	public class GameGraphics 
+	{
+		[Embed(source="../../../maps/tileset.png")]
+		[Bindable]
+		private static var tileset48Class:Class;
+		[Embed(source="../../../maps/tileset24.png")]
+		[Bindable]
+		private static var tileset24Class:Class;
+		
+		public static var tileset24:BitmapData;
+		public static var tileset48:BitmapData;
+		
+		public function GameGraphics() { }
+		
+		public static function init():void {
+			setTilesetImage(24, new tileset24Class() as BitmapAsset);
+			setTilesetImage(48, new tileset48Class() as BitmapAsset);
+		}
+		
+		private static function setTilesetImage(size:int, bma:BitmapAsset):void {
+			if (size == 24) {
+				tileset24 = bma.bitmapData;
+			} else {
+				tileset48 = bma.bitmapData;
+			}
+		}
+      
+		public static function makeSprite(index:int):Bitmap
+		{
+			var map:Map = Global.game.getActiveMap();
+			var bitmap:Bitmap = new Bitmap(new BitmapData(48, 48));
+			bitmap.bitmapData.copyPixels(
+				GameGraphics.tileset48, 
+				new Rectangle((index % 17) * 48, (int(index/17)) * 48, 48, 48*2),
+				new Point(0, 0)
+			);
+
+			return(bitmap);
+		}
+	}
+
+}

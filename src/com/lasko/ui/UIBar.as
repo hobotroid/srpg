@@ -11,6 +11,8 @@ package com.lasko.ui
 	
 	import com.greensock.*;
 	import com.greensock.easing.*;
+	
+	import com.lasko.Global;
    
 	public class UIBar extends MovieClip
 	{

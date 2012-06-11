@@ -9,6 +9,9 @@
    import flash.events.*;
    import flash.geom.Rectangle;
    import flash.geom.Point;
+   
+   import com.lasko.Global;
+   import com.lasko.GameGraphics;
 
    public class ShopScreen extends Screen {
       private var party:Party;
@@ -27,7 +30,7 @@
          for each(var item:Item in items) {
             var mc:MovieClip = new MovieClip();
             var tf:TextField = Global.makeText(item.name.toUpperCase());
-            var icon:Bitmap = Global.makeSprite(item.getIcon("small"));
+            var icon:Bitmap = GameGraphics.makeSprite(item.getIcon("small"));
             tf.x = icon.x + icon.width;
             tf.y = icon.y + icon.height / 2 - tf.height / 2;
             mc.addChild(tf);

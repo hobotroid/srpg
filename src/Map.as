@@ -13,6 +13,8 @@
     
     import com.lasko.util.Base64;
     import com.lasko.entity.Character;
+	import com.lasko.Global;
+	import com.lasko.Game;
 	
 	public class Map
 	{
@@ -24,7 +26,6 @@
 		public var tileHeight:int;
 		public var playerStart:Object;
 		public var playerLayers:Object = {};
-		private var parentClip:Test;
 		
 		public var tiles:Array = new Array();
         private var tileSets:Object = { };
@@ -38,25 +39,16 @@
 		private var mapLoader:URLLoader;
 		private var tilesLoader:Loader;
 		private var backgroundLoader:Loader;
-		private var tilesetFilename:String;
-		private var mapFilename:String;
-		private var tilesFilename:String;
-		private var completeFunction:Function;
 		
 		private var mapData:XML;
+		private var mapName:String;
 		
-		public function Map(clip:Test, mapFilename:String, completeFunction:Function)
+		public function Map(mapName:String)
 		{
-			this.mapFilename = mapFilename;
-			this.tilesFilename = tilesFilename;
-			this.completeFunction = completeFunction;
-			this.parentClip = clip;
-			XML.ignoreWhitespace = true;
-			XML.prettyIndent = 0;
-            
-            mapLoader = new URLLoader();
-            mapLoader.addEventListener(Event.COMPLETE, mapLoaded);
-            mapLoader.load(new URLRequest(mapFilename));
+            this.mapName = mapName;
+			this.mapData = Global.getMapXML(mapName);
+			
+			mapLoaded();
         }
 
 		public function findTileSet(spriteNumIndex:int):Object {
@@ -70,10 +62,8 @@
 			return found;
 		}
 		
-		private function mapLoaded(e:Event):void
+		private function mapLoaded():void
 		{
-			mapData = new XML(mapLoader.data);
-			
             //tilesets
             for each (var tileset:XML in mapData.tileset) {
                 var w:int = Number(tileset.@tilewidth);
@@ -432,9 +422,6 @@
 					}
 				}
 			}
-			
-			//map is all done loading - call complete function
-			completeFunction(this);
 		}
 		
 		public function updateNPCs():void

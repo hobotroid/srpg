@@ -14,6 +14,8 @@ package com.lasko.encounter
 	import com.greensock.easing.*;
 	
 	import com.lasko.entity.Character;
+	import com.lasko.Global;
+	import com.lasko.GameGraphics;
 	
 	public class EncounterEntity 
 	{
@@ -60,77 +62,19 @@ package com.lasko.encounter
 
 			var currentFrame:int = character.anim.getCurrentFrame();
 			bitmap.bitmapData.copyPixels(
-				Global.tileset48, 
+				GameGraphics.tileset48, 
 				new Rectangle((currentFrame % 17) * 48, (int(currentFrame/17)) * 48, bitmap.width, bitmap.height),
 				new Point(0, 0)
 			);
 			if (!sprite.contains(bitmap)) { sprite.addChild(bitmap); }
 		}
-	
-		public function showCombatAnimation(callback:Function):void
-		{
-			this.setState(EncounterEntity.STATE_ATTACKING);
-			this.showCombatAttack(function():void {
-				var hitsFinished:int = 0;
-				var targets:Array = action.getTargets();
-				for each(var targetEntity:EncounterEntity in targets) { 
-					targetEntity.showCombatHit(function():void {
-						if (hitsFinished++ >= targets.length - 1) {
-							if (targetEntity.getCharacter().getStateName() == Global.STATE_DEAD && targetEntity.getState() != EncounterEntity.STATE_DEAD) {
-								targetEntity.die();
-								targetEntity.doEnemyDeathAnimation(function():void {
-									returnToPosition(function():void {
-										setState(EncounterEntity.STATE_WAITING);
-										callback();
-									});
-								});
-							} else {							
-								returnToPosition(function():void {
-									setState(EncounterEntity.STATE_WAITING);
-									callback();
-								});
-							}
-						}
-					});
-				}
-			});
-		}
-		
-		public function showSpellAnimation(callback:Function):void
-		{
-			this.setState(EncounterEntity.STATE_ATTACKING);
-			this.showSpellCast(function():void { 
-				var hitsFinished:int = 0;
-				var targets:Array = action.getTargets();
-				for each(var targetEntity:EncounterEntity in targets) { 
-					targetEntity.showCombatHit(function():void {
-						if (hitsFinished++ >= targets.length - 1) {
-							if (targetEntity.getCharacter().getStateName() == Global.STATE_DEAD && targetEntity.getState() != EncounterEntity.STATE_DEAD) {
-								targetEntity.die();
-								targetEntity.doEnemyDeathAnimation(function():void {
-									returnToPosition(function():void {
-										setState(EncounterEntity.STATE_WAITING);
-										callback();
-									});
-								});
-							} else {							
-								returnToPosition(function():void {
-									setState(EncounterEntity.STATE_WAITING);
-									callback();
-								});
-							}
-						}
-					});
-				}
-			});
-		}
 
-		private function die():void {
+		public function die():void {
 			this.setState(EncounterEntity.STATE_DEAD);
 			this.clearAction();
 		}
 		
-		private function returnToPosition(callback:Function):void {
+		public function returnToPosition(callback:Function):void {
 			TweenMax.to(this.sprite, .5, { x:this.originalPosition.x, ease:Expo.easeInOut, onComplete:callback });
 		}
       
@@ -142,7 +86,7 @@ package com.lasko.encounter
 
 			var hitBitmap:Bitmap = new Bitmap(new BitmapData(48, 48));
 			hitBitmap.bitmapData.copyPixels(
-				Global.tileset48, 
+				GameGraphics.tileset48, 
 				new Rectangle((340 % 17) * 48, (int(340/17)) * 48, bitmap.width, bitmap.height),
 				new Point(0, 0)
 			);
@@ -163,17 +107,15 @@ package com.lasko.encounter
 		}
       
 		//swings a weapon behind a character (or do whatever frames the weapon specifies)
-		private function showCombatAttack(callback:Function):void
+		public function showCombatAttack(callback:Function):void
 		{
 			var weapon:Item = CombatActionWeapon(this.action).getWeapon();
  			this.animation = new CombatAnimation(weapon.getAttackFrames());
 			
-			this.moveToActionPosition(function():void {
-				var attackAnimTimer:MyTimer = new MyTimer(100, animation.getFrameCount()+1);
-				attackAnimTimer.addEventListener(TimerEvent.TIMER, attackTimerFired);
-				attackAnimTimer.addEventListener(TimerEvent.TIMER_COMPLETE, callback);
-				attackAnimTimer.start();
-			});
+			var attackAnimTimer:MyTimer = new MyTimer(100, animation.getFrameCount()+1);
+			attackAnimTimer.addEventListener(TimerEvent.TIMER, attackTimerFired);
+			attackAnimTimer.addEventListener(TimerEvent.TIMER_COMPLETE, callback);
+			attackAnimTimer.start();
 		}
       
 		//character casts a spell
@@ -183,7 +125,7 @@ package com.lasko.encounter
 		}
 		
 		//move character forward for an attack/spell/action
-		private function moveToActionPosition(callback:Function):void {
+		public function moveToActionPosition(callback:Function):void {
 			var destination_x:int = sprite.x + (this.type == EncounterEntity.TYPE_BAD ? 50 : -50);
 			TweenMax.to(sprite, .5, { 
 				x:destination_x, 
@@ -204,7 +146,7 @@ package com.lasko.encounter
 				hitBitmap = sprite.getChildByName("hitBitmap") ? sprite.getChildByName("hitBitmap") as Bitmap : new Bitmap(new BitmapData(frame.width, frame.height));
 				hitBitmap.name = "hitBitmap";
 				hitBitmap.bitmapData.copyPixels(
-					Global.tileset48, 
+					GameGraphics.tileset48, 
 					new Rectangle((frame.index % 17) * 48, (int(frame.index/17)) * 48, frame.width, frame.height),
 					new Point(0, 0)
 				);
@@ -263,17 +205,17 @@ package com.lasko.encounter
 			ghostFrames[1] = new Bitmap(new BitmapData(48, 48 * 2, true));
 			ghostFrames[2] = new Bitmap(new BitmapData(48, 48*2, true));
 			ghostFrames[0].bitmapData.copyPixels(
-				Global.tileset48, 
+				GameGraphics.tileset48, 
 				new Rectangle((330 % 17) * 48, (int(330/17)) * 48, 48, 48*2),
 				new Point(0, 0)
 			);
 			ghostFrames[1].bitmapData.copyPixels(
-				Global.tileset48, 
+				GameGraphics.tileset48, 
 				new Rectangle((331 % 17) * 48, (int(331/17)) * 48, 48, 48*2),
 				new Point(0, 0)
 			);
 			ghostFrames[2].bitmapData.copyPixels(
-				Global.tileset48, 
+				GameGraphics.tileset48, 
 				new Rectangle((332 % 17) * 48, (int(332/17)) * 48, 48, 48*2),
 				new Point(0, 0)
 			);

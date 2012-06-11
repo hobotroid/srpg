@@ -13,6 +13,7 @@
     import com.lasko.entity.CharacterCombat;
 	import com.lasko.entity.Entity;
 	import com.lasko.encounter.CombatCondition;
+	import com.lasko.Global;
 	
 	public class Character extends Entity
 	{
@@ -786,7 +787,7 @@
 		
 		private function dosileTimerHandler(e:TimerEvent):void
 		{
-			if (!rect.intersects(Global.game.party.leader.rect))
+			if (!rect.intersects(Global.game.getParty().leader.rect))
 			{
 				e.target.stop();
 				dosileTimer = null;

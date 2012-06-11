@@ -9,6 +9,7 @@ package com.lasko.encounter
 	import com.lasko.util.Utils;
 	import com.lasko.entity.Character;
 	import com.lasko.encounter.EncounterEntity;
+	import com.lasko.Global;
 	
 	public class Turn extends EventDispatcher
 	{
@@ -43,9 +44,7 @@ package com.lasko.encounter
 					action.setSource(enemy);
 					action.addTarget(goodEntities[0]);
 					enemy.setAction(action);
-					//trace(enemy.getCharacter().name + ' : ACTION SET TO : ' + action.getName());
-				} else {
-					//trace('CANNOT SET ACTION BECAUSE STATE IS : ' + enemy.getState());
+					trace(enemy.getCharacter().name + ' : ACTION SET TO : ' + action.getName());
 				}
 			}
 		}
@@ -56,7 +55,7 @@ package com.lasko.encounter
 			var actionsToPerform:Array = [];
 			var allEntities:Array = badEntities.concat(goodEntities);
 
-			//prepare list of actions, then execute them 1 by 1
+			//prepare list of actions, then execute them sequentially
 			for each(var entity:EncounterEntity in allEntities) {
 				var action:CombatActionBase = entity.getAction();
 				if (action) {
@@ -80,15 +79,10 @@ package com.lasko.encounter
 			var action:Object = actions[index];
 			var results:Object;
 			var entity:EncounterEntity = action.getSource();
-			var opposingEntities:Array = entity.getType() == EncounterEntity.TYPE_BAD ? goodEntities : badEntities;
-			if (action && action.verify(opposingEntities)) {
-				Encounter.debugOut(entity.getCharacter().name + "'s action is: " + action.getName());
-				action.execute(function():void {
-					doAction(actions, index + 1);
-				});
-			} else {
+			Encounter.debugOut(entity.getCharacter().name + "'s action is: " + action.getName());
+			action.execute(function():void {
 				doAction(actions, index + 1);
-			}
+			});
 
 			entity.update();
 		}

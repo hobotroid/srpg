@@ -24,6 +24,8 @@
 	import com.lasko.ui.Screen;
 	import com.lasko.util.Utils;
 	import com.lasko.entity.Character;
+	import com.lasko.Global;
+	import com.lasko.GameGraphics;
    
 	public class Encounter extends TopLevel {
 		private static const COMBATMENU_W:int = 400;
@@ -35,8 +37,6 @@
 		private static const CHARACTER_SCALE:int = 1;
 		private static const PARTY_SELECTOR_SPEED:int = 60;
 		private static const ENEMY_SELECTOR_SPEED:int = 160;
-		
-		private static var debugField:TextField = new TextField();
 		
 		private static var map:Map = Global.game.getActiveMap();
 		[Embed(source="../../../../gfx/plane-fight-background.png")]
@@ -90,7 +90,7 @@
 			for (var i:int = 0; i < frameIndexes.length; i++) {
 				var bitmap:Bitmap = new Bitmap(new BitmapData(48, 48));
 				bitmap.bitmapData.copyPixels(
-				   Global.tileset48, 
+				   GameGraphics.tileset48, 
 				   new Rectangle((frameIndexes[i] % 17) * 48, (int(frameIndexes[i]/17)) * 48, 48, 48*2),
 				   new Point(0, 0)
 				);
@@ -140,20 +140,7 @@
 			badClip.y = height / 2 - badClip.height / 2;
 			addChild(badClip);
 			badClip.addChild(enemySelector);
-         
-			//place debug output
-			debugField.width = width - 100;
-			debugField.height = 100;
-			debugField.x = width / 2 - debugField.width / 2;
-			debugField.y = 10;
-			debugField.border = true;
-			debugField.borderColor = 0xff0000;
-			debugField.background = true;
-			debugField.backgroundColor = 0xffffff;
-			debugField.visible = true;
-			debugField.mouseEnabled = false;
-			addChild(debugField);
-		 
+
 			//new bottom menu
 			var heads:MovieClip = new MovieClip();
 			var HEAD_WIDTH:int = 90, HEAD_HEIGHT:int = 90, BOTTOM_BAR_WIDTH:int = width - 20, 
@@ -169,7 +156,7 @@
 				var headBmp:Bitmap = new Bitmap(new BitmapData(char.width, char.height));
 				var currentFrame:int = char.anim.getCurrentFrame();
 				headBmp.bitmapData.copyPixels(
-					Global.tileset48, new Rectangle((currentFrame % 17) * 48, (int(currentFrame / 17)) * 48, char.width, char.height), new Point(0, 0)
+					GameGraphics.tileset48, new Rectangle((currentFrame % 17) * 48, (int(currentFrame / 17)) * 48, char.width, char.height), new Point(0, 0)
 				);
 				headBmp.bitmapData = Utils.autoCrop(headBmp.bitmapData);
 				headBmp.bitmapData = Utils.crop(headBmp.bitmapData, new Rectangle(0, 0, headBmp.bitmapData.width, char.head_cutoff_y));			
@@ -192,14 +179,7 @@
 				//heads.addChild(hpBar);
 				//heads.addChild(spBar);
 				headClip.addChild(hpBar);
-				headClip.addChild(spBar);
-				
-				//debug boxes
-				/*var debugBox:Bitmap = new Bitmap(new BitmapData(HEAD_WIDTH, HEAD_HEIGHT, true, 0xFF0000FF));
-				debugBox.x = headBmp.x;
-				debugBox.y = headBmp.y;
-				trace(debugBox.x + ' x ' + debugBox.y + ' - ' + debugBox.width + ' x ' + debugBox.height);
-				heads.addChild(debugBox);*/
+				headClip.addChild(spBar);				
 				
 				menus.addMenuItem("party", headClip, {
 					x: 290 + HEAD_PADDING * count + HEAD_WIDTH * count + HEAD_WIDTH / 2 - headBmp.width / 2 + 5, 
@@ -218,17 +198,12 @@
 			//little dialog bubble indicator
 			pointer = new Bitmap(new BitmapData(48, 48));
 			pointer.bitmapData.copyPixels(
-				Global.tileset48, 
+				GameGraphics.tileset48, 
 				new Rectangle((68 % 17) * 48, (int(68/17)) * 48, 48, 48*2),
 				new Point(0, 0)
 			);
 			pointer.visible = false;
 			this.addChild(pointer);
-
-			//debug mouse movement
-			/*this.addEventListener(MouseEvent.MOUSE_MOVE, function(e:MouseEvent) {
-			debugOut(mouseX + 'x' + mouseY); 
-			});*/
 		}
 
 		private function newTurn(e:Event=null):void {
@@ -315,6 +290,7 @@
 			var action:CombatActionWeapon = new CombatActionWeapon();
 			action.setWeapon(selectedCharacter.combat.getEquippedWeapon());
 			action.setSource(selectedEntity);
+			action.setTargetCandidates(badEntities);
 			selectedEntity.setAction(action);
 			
 			menus.switchBox(null);
@@ -342,9 +318,13 @@
       
 		private function scienceSelected(object:Object):void {
 			debugOut("science selected, choosing spell...");
+			var actionsBox:Object = menus.getBox("actions");
 			state = "choosing_science";
 
-			menus.addBox({x:60, y:height - 200, width:400, height:100, label:"science"});
+			menus.addBox( {
+				x:actionsBox.x + actionsBox.width + 10, y:actionsBox.y, width:117, height:115, 
+				label:"science"
+			});
 			var char:Character = goodEntities[selectedMember].getCharacter();
 			var spells:Array = char.getSpells();
 
@@ -380,6 +360,7 @@
 			var action:CombatActionSpell = new CombatActionSpell();
 			action.setSpell(spell);
 			action.setSource(goodEntities[selectedMember]);
+			action.setTargetCandidates(badEntities);
 			goodEntities[selectedMember].setAction(action);
 			
 			menus.switchBox(null);
@@ -634,9 +615,7 @@
       
 		public static function debugOut(value:String):void
 		{
-			if (debugField.text.length) { debugField.appendText("\n"); }
-			debugField.appendText(value);
-			debugField.scrollV = debugField.textHeight;
+			Global.debugOut(value);
 		}
    }
 }
