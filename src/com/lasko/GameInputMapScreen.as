@@ -37,26 +37,6 @@ package com.lasko
 				case 80: //pause
 					Global.game.setState(Game.GAME_STATE_CHARACTER_SCREEN);
 					break;
-				case 70: //fullscreen - f key
-					/*this.width = flash.system.Capabilities.screenResolutionX;
-					this.height = flash.system.Capabilities.screenResolutionY;
-					this.stage.align = flash.display.StageAlign.TOP_LEFT;
-					this.stage.scaleMode = StageScaleMode.NO_SCALE;
-					this.stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE*/
-					
-					//if normal size, go to fullscreen, else go to normal size
-					if (FlexGlobals.topLevelApplication.stage.displayState == StageDisplayState.NORMAL)
-					{
-						FlexGlobals.topLevelApplication.stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
-						FlexGlobals.topLevelApplication.stage.scaleMode = StageScaleMode.SHOW_ALL;
-						
-					}
-					else
-					{
-						FlexGlobals.topLevelApplication.stage.displayState = StageDisplayState.NORMAL;
-							//stage.displayState = "normal";
-					}
-					break;
 				case 67: //c key - toggle collision view
 					Global.game.debugShowCollision = !Global.game.debugShowCollision;
 					Global.game.debugHighlightedTiles = [];

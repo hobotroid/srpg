@@ -1,7 +1,11 @@
 package com.lasko 
 {
+	import flash.events.KeyboardEvent;	
+	import flash.display.StageScaleMode;
+	import flash.display.StageDisplayState;
 	import flash.ui.Keyboard;
-	import flash.events.KeyboardEvent;
+	
+	import mx.core.FlexGlobals;
 	
 	public class GameInput extends TopLevel
 	{
@@ -20,6 +24,10 @@ package com.lasko
 			this.id = id;
 			GameInput.instances.push(this);
 			GameInput.activeInstance = GameInput.instances.length - 1;
+		}
+		
+		public function getId():String {
+			return this.id;
 		}
 		
 		public static function init(main:Object):void {
@@ -71,10 +79,36 @@ package com.lasko
 		
 		private static function keyPressedEvent(event:KeyboardEvent):void
 		{
+			if(event.keyCode == 70) { //fullscreen - f key
+				/*this.width = flash.system.Capabilities.screenResolutionX;
+				this.height = flash.system.Capabilities.screenResolutionY;
+				this.stage.align = flash.display.StageAlign.TOP_LEFT;
+				this.stage.scaleMode = StageScaleMode.NO_SCALE;
+				this.stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE*/
+				
+				//if normal size, go to fullscreen, else go to normal size
+				if (FlexGlobals.topLevelApplication.stage.displayState == StageDisplayState.NORMAL) {
+					FlexGlobals.topLevelApplication.stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
+					FlexGlobals.topLevelApplication.stage.scaleMode = StageScaleMode.SHOW_ALL;
+					
+				} else {
+					FlexGlobals.topLevelApplication.stage.displayState = StageDisplayState.NORMAL;
+						//stage.displayState = "normal";
+				}
+			}
+			
 			GameInput.instances[GameInput.activeInstance].keyPressed(event.keyCode);
 			
 			event.stopImmediatePropagation();
 			event.stopPropagation();
+		}
+		
+		public static function getInstances():Array {
+			return GameInput.instances;
+		}
+		
+		public static function getActiveInstance():GameInput {
+			return GameInput.instances[GameInput.activeInstance];
 		}
 		
 		//override these

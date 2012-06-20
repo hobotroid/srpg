@@ -9,9 +9,7 @@
 	import flash.geom.Rectangle;
 	import flash.geom.Point;
 	import flash.events.Event;
-	import flash.events.KeyboardEvent;
 	import flash.text.TextField;
-	import flash.ui.Keyboard;
 	
 	import com.greensock.*;
 	import com.greensock.easing.*;
@@ -26,8 +24,15 @@
 	import com.lasko.entity.Character;
 	import com.lasko.Global;
 	import com.lasko.GameGraphics;
+	import com.lasko.encounter.GameInputEncounter;
    
 	public class Encounter extends TopLevel {
+		public static const STATE_CHOOSING_TARGET:int = 0;
+		public static const STATE_CHOOSING_MEMBER:int = 1;
+		public static const STATE_CHOOSING_ACTION:int = 2;
+		public static const STATE_CHOOSING_SCIENCE:int = 3;
+		public static const STATE_CHOOSING_THING:int = 4;
+		public static const STATE_EXECUTING_TURN:int = 0;
 		private static const COMBATMENU_W:int = 400;
 		private static const COMBATMENU_H:int = 100;
 		private static const PADDING_LEFT:int = 50;
@@ -50,10 +55,11 @@
 		private var badClip:MovieClip = new MovieClip();
 		private var selectedTarget:int = -1;
 		private var selectedMember:int = -1;
-		private var state:String = "";
+		private var state:int;
 		
 		private var turn:Turn;
 
+		private var input:GameInputEncounter;
 		private var menus:Screen = new Screen(false);
 
 		private var pointer:Bitmap;
@@ -72,6 +78,7 @@
 			addEventListener(Event.ADDED_TO_STAGE, newTurn);
 			goodParty = goodies;
 			badParty = baddies;
+			this.input = new GameInputEncounter(this);
          
 			//set up party array
 			for each(var goodCharacter:Character in goodies.characters) {
@@ -206,6 +213,22 @@
 			this.addChild(pointer);
 		}
 
+		public function getState():int {
+			return state;
+		}
+		
+		public function getSelectedTarget():int {
+			return selectedTarget;
+		}
+
+		public function getSelectedMember():int {
+			return selectedMember;
+		}
+		
+		public function getMenus():Screen {
+			return menus;
+		}
+		
 		private function newTurn(e:Event=null):void {
 			stage.focus = this;
 			this.turn = new Turn(goodEntities, badEntities);
@@ -214,7 +237,7 @@
 			//give player control for picking party actions
 			menus.switchBox("party");
 			selectNextMember();
-			state = "choosing_member";
+			state = Encounter.STATE_CHOOSING_MEMBER;
 			menus.addKeyListener();
 		}
 		
@@ -240,12 +263,11 @@
 			menus.addMenuText("actions", {label:"Science", callback:scienceSelected, callbackParams:entity, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
 			menus.addMenuText("actions", {label:"Things", callback:thingsSelected, callbackParams:entity, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } } );
 			menus.addMenuText("actions", {label:"Pass", callback:passSelected, callbackParams:entity, exitCallback:function():void { menus.removeBox("actions"); menus.switchBox("party"); } });
-			state = "choosing_actions";
+			state = Encounter.STATE_CHOOSING_ACTION;
 			menus.switchBox("actions");
 		}
 
-		private function targetSelected(params:Object=null):void {
-			removeKeyListener();
+		public function targetSelected(params:Object=null):void {
 			menus.removeBox("actions");
 			menus.removeBox("science");
 			menus.removeBox("enemies");
@@ -271,7 +293,7 @@
 			}
 			if (actionCount == goodEntities.length) {
 				//turn = new Turn(goodEntities, badEntities);
-				state = "turn";
+				state = Encounter.STATE_EXECUTING_TURN;
 				this.turn.execute();
 				partySelector.visible = false;
 				return;
@@ -311,15 +333,13 @@
 			});
 			menus.switchBox("enemies");
          
-			//menus.removeKeyListener();
-			state = "choosing_target";
-			//addKeyListener();
+			state = Encounter.STATE_CHOOSING_TARGET;
 		}
       
 		private function scienceSelected(object:Object):void {
 			debugOut("science selected, choosing spell...");
 			var actionsBox:Object = menus.getBox("actions");
-			state = "choosing_science";
+			state = Encounter.STATE_CHOOSING_SCIENCE;
 
 			menus.addBox( {
 				x:actionsBox.x + actionsBox.width + 10, y:actionsBox.y, width:117, height:115, 
@@ -339,7 +359,7 @@
 		{
 			debugOut("things selected, choosing inventory item...");
 			var char:Character = goodEntities[selectedMember].getCharacter();
-			state = "choosing_thing";
+			state = Encounter.STATE_CHOOSING_THING;
 			if (goodParty.inventory.hasCombatItem()) {
 				menus.addBox({x:60, y:height - 200, width:500, height:100, label:"things"});
 				var inventory:Object = goodParty.inventory.getCombatItems();
@@ -366,9 +386,7 @@
 			menus.switchBox(null);
 			selectFirstTarget();
 
-			menus.removeKeyListener();
-			state = "choosing_target";
-			addKeyListener();
+			state = Encounter.STATE_CHOOSING_TARGET;
 		}
       
 		private function passSelected(entity:EncounterEntity):void
@@ -391,16 +409,14 @@
 			menus.switchBox(null);
 			selectFirstTarget();
          
-			menus.removeKeyListener();
-			state = "choosing_target";
-			addKeyListener();
+			state = Encounter.STATE_CHOOSING_TARGET;
 		}
       
       
       
       
 		/********************** FUNCTIONS FOR CHOOSING AN ENEMY / PARTY MEMBER ***************************/
-		private function selectTarget(type:String, index:int):void
+		public function selectTarget(type:String, index:int):void
 		{
 			if (index == -1) {
 				pointer.visible = false;
@@ -433,7 +449,7 @@
 			}
 		}
       
-		private function selectNextTarget():void
+		public function selectNextTarget():void
 		{
 			var checkedCount:int = 0;
 			var index:int = Math.abs(selectedTarget) - 1;
@@ -459,7 +475,7 @@
 			}
 		}
       
-		private function selectPreviousTarget():void
+		public function selectPreviousTarget():void
 		{
 			var checkedCount:int = 0;
 			var index:int = Math.abs(selectedTarget) - 1;
@@ -485,7 +501,7 @@
 			}
 		}
       
-		private function selectNextMember():void
+		public function selectNextMember():void
 		{
 			menus.changeItem(1);
 		}
@@ -502,7 +518,6 @@
 				</dialog>
 			);
 			var d:DialogBox = new DialogBox(dialog, null, null, destroy);
-			removeKeyListener();
 			addChild(d);
 		}
       
@@ -513,61 +528,6 @@
 		}
       
 
-      
-		/************************** KEY LISTENER STUFF ****************************/
-		public function addKeyListener(e:Event=null):void
-		{
-			if(!hasEventListener(KeyboardEvent.KEY_UP)) { 
-				addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true); 
-			}
-			stage.focus = this;
-		}
-
-		public function removeKeyListener():void
-		{
-			if(hasEventListener(KeyboardEvent.KEY_UP)) { 
-				removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
-			}
-		}
-      
-		private function keyUpHandler(e:KeyboardEvent):void
-		{
-			switch(state) {
-				case "choosing_target":
-					if (e.keyCode == Keyboard.UP) {
-						selectPreviousTarget();
-					} else if (e.keyCode == Keyboard.DOWN) {
-						selectNextTarget();
-					} else if (e.keyCode == Keyboard.RIGHT || e.keyCode == Keyboard.LEFT) {
-						if (selectedTarget > -1) {
-							selectTarget('ally', 1);
-						} else {
-							selectTarget('enemy', 1);
-						}
-					}
-
-					if (e.keyCode == 88) { //X
-						targetSelected();
-					} else if(e.keyCode == 90) { //Z
-						selectTarget('enemy', 1);
-						if (goodEntities[selectedMember].action == "spell") {
-							menus.switchBox("science");
-						} else { 
-							menus.switchBox("actions");
-						}
-						removeKeyListener();
-						menus.addKeyListener();
-					}
-				break;
-				case "choosing_member":
-					trace('CHOOSIN\'');
-				break;
-				default: break;
-			}
-
-			e.stopPropagation();
-		}
-      
 		public function partyChanged(index:int):void
 		{
 			partySelector.x = goodEntities[index].getSprite().x;
