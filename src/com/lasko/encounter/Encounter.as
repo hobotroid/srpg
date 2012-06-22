@@ -238,7 +238,6 @@
 			menus.switchBox("party");
 			selectNextMember();
 			state = Encounter.STATE_CHOOSING_MEMBER;
-			menus.addKeyListener();
 		}
 		
 		private function turnFinishedEvent(e:CustomEvent):void {
@@ -298,8 +297,6 @@
 				partySelector.visible = false;
 				return;
 			}
-
-			menus.addKeyListener();
 		}
 
 		/************ MENU OPTIONS WHEN SELECTING A PARTY MEMBER ************/
