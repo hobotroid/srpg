@@ -71,6 +71,7 @@ package com.lasko.entity
 		public function sendSpell(spell:Spell, dest:Character):Object
 		{
 			var results:Object = spell.cast(dest);
+			character.addMP(-spell.getMpCost());
 			return ({message: "Spell!", value: 100});
 		}
 		

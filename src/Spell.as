@@ -9,6 +9,10 @@
 		{
 			this.name = name;
 		}
+		
+		public function getMpCost():int {
+			return 10;
+		}
 
 		public function cast(target:Character):Boolean
 		{

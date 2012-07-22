@@ -37,7 +37,7 @@
          displayPrompt({prompt: initialPrompt});
          switchBox("dialog"); 
          
-         addEventListener(Event.ADDED, addKeyListener);
+         //addEventListener(Event.ADDED, addKeyListener);
       }
       
       public function displayPrompt(params:Object):void {
@@ -64,7 +64,6 @@ trace(actionType);
                case "end":
                   break;
                case "encounter":
-                  removeKeyListener();
                   Global.game.startEncounter(Game(parent).getParty(), npc);
                   //Test(parent).endDialog();
                   break;

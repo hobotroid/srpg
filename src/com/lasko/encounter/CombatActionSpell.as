@@ -27,9 +27,11 @@ package com.lasko.encounter
 			var source:EncounterEntity = this.getSource();
 			var sourceCharacter:Character = source.getCharacter();
 			
-			for each(var targetCharacter:EncounterEntity in targets) {
-				var results:Object = sourceCharacter.combat.sendSpell(this.spell, targetCharacter.getCharacter());
+			for each(var targetEntity:EncounterEntity in targets) {
+				var results:Object = sourceCharacter.combat.sendSpell(this.spell, targetEntity.getCharacter());
+				targetEntity.statChanged();
 			}
+			source.statChanged();
 			
 			source.setState(EncounterEntity.STATE_ATTACKING);
 			this.executeAnimation(function():void {

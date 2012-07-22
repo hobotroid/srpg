@@ -1,16 +1,21 @@
-package com.lasko.ui 
+package com.lasko.input 
 {
 	import flash.ui.Keyboard;
 	
 	import com.lasko.ui.Screen;	
-	import com.lasko.GameInput;
+	import com.lasko.input.GameInput;
+	import com.lasko.encounter.Encounter;
 	
-	public class GameInputScreen extends GameInput
+	public class GameInputEncounter extends GameInput
 	{		
-		private var screen:Screen;
+		private var encounter:Encounter;
+		private var menues:Screen;
 		
-		public function GameInputEncounter(screen:Screen) 
+		public function GameInputEncounter(encounter:Encounter) 
 		{
+			super("encounter");
+			this.encounter = encounter;
+			this.menues = encounter.getMenus();
 		}
 		
 		protected override function keyPressed(keyCode:int):void {

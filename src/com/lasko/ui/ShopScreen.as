@@ -40,7 +40,7 @@
 
          switchBox("type"); 
          
-         addEventListener(Event.ADDED, addKeyListener);
+         //addEventListener(Event.ADDED, addKeyListener);
       }
       
       private function switchType(type:String):void

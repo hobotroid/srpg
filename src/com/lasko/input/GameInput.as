@@ -1,4 +1,4 @@
-package com.lasko 
+package com.lasko.input 
 {
 	import flash.events.KeyboardEvent;	
 	import flash.display.StageScaleMode;
@@ -7,9 +7,13 @@ package com.lasko
 	
 	import mx.core.FlexGlobals;
 	
+	import com.lasko.Global;
+	import com.lasko.util.Utils;
+	
 	public class GameInput extends TopLevel
 	{
-		private var id:String;
+		private var label:String;
+		private var index:int;
 		
 		private static var instances:Array = new Array();
 		private static var activeInstance:int = -1;
@@ -19,15 +23,34 @@ package com.lasko
 		public static var keysPressedCount:int = 0;
 		private static var listening:Boolean = false;
 		
-		public function GameInput(id:String)
+		public function GameInput(label:String)
 		{
-			this.id = id;
 			GameInput.instances.push(this);
 			GameInput.activeInstance = GameInput.instances.length - 1;
+			this.label = label;
+			this.index = GameInput.instances.length - 1;
 		}
 		
-		public function getId():String {
-			return this.id;
+		public function getIndex():int {
+			return this.index;
+		}
+		
+		public function getLabel():String {
+			return this.label;
+		}
+		
+		public function enable():void {
+			for each(var instance:GameInput in GameInput.instances) {
+				if (instance.getLabel() == this.label) {
+					GameInput.activeInstance = instance.getIndex();
+				}
+			}
+			
+			GameInput.start();
+		}
+		
+		public function disable():void {
+			GameInput.stop();
 		}
 		
 		public static function init(main:Object):void {
@@ -35,7 +58,7 @@ package com.lasko
 			GameInput.start();
 		}
 		
-		private static function start():void
+		public static function start():void
 		{
 			clearKeys();
 			if (listening) { return; }
@@ -44,11 +67,12 @@ package com.lasko
 			main.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 		}
 		
-		private static function stop():void
+		public static function stop():void
 		{
 			main.removeEventListener(KeyboardEvent.KEY_DOWN, keyDownHandler);
 			main.removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 			listening = false;
+			GameInput.activeInstance = -1;
 		}
 		
 		private static function clearKeys():void
@@ -90,13 +114,13 @@ package com.lasko
 				if (FlexGlobals.topLevelApplication.stage.displayState == StageDisplayState.NORMAL) {
 					FlexGlobals.topLevelApplication.stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
 					FlexGlobals.topLevelApplication.stage.scaleMode = StageScaleMode.SHOW_ALL;
+					//FlexGlobals.topLevelApplication.stage.scaleMode = StageScaleMode.EXACT_FIT;
 					
 				} else {
 					FlexGlobals.topLevelApplication.stage.displayState = StageDisplayState.NORMAL;
-						//stage.displayState = "normal";
 				}
 			}
-			
+
 			GameInput.instances[GameInput.activeInstance].keyPressed(event.keyCode);
 			
 			event.stopImmediatePropagation();

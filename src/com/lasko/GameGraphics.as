@@ -8,6 +8,7 @@ package com.lasko
 	import mx.core.BitmapAsset;
 	
 	import com.lasko.Global;
+	import com.lasko.ui.UIBar;
 		
 	public class GameGraphics 
 	{
@@ -21,11 +22,16 @@ package com.lasko
 		public static var tileset24:BitmapData;
 		public static var tileset48:BitmapData;
 		
+		public static var uiBarCap:Bitmap;
+		
 		public function GameGraphics() { }
 		
 		public static function init():void {
 			setTilesetImage(24, new tileset24Class() as BitmapAsset);
 			setTilesetImage(48, new tileset48Class() as BitmapAsset);
+			
+			uiBarCap = new Bitmap(new BitmapData(24, 24, true, 0x00000000));
+			uiBarCap.bitmapData.copyPixels(GameGraphics.tileset24, new Rectangle((7 % 34) * 24, (int(7 / 34)) * 24, 24, 24), new Point(0, 0));
 		}
 		
 		private static function setTilesetImage(size:int, bma:BitmapAsset):void {

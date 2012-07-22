@@ -32,6 +32,7 @@ package com.lasko.encounter
 			
 			for each(var targetEntity:EncounterEntity in targets) {
 				var result:Object = source.getCharacter().combat.sendAttack(targetEntity.getCharacter(), this.weaponItem);
+				targetEntity.statChanged();
 				trace(result.message);
 			}
 			
@@ -48,7 +49,7 @@ package com.lasko.encounter
 			sourceEntity.showCombatAttack(function():void {
 				var hitsFinished:int = 0;
 				var targets:Array = getTargets();
-				for each(var targetEntity:EncounterEntity in targets) { 
+				for each(var targetEntity:EncounterEntity in targets) {
 					targetEntity.showCombatHit(function():void {
 						if (hitsFinished++ >= targets.length - 1) {
 							if (targetEntity.getCharacter().getStateName() == Global.STATE_DEAD && targetEntity.getState() != EncounterEntity.STATE_DEAD) {

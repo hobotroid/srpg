@@ -749,12 +749,32 @@
 		public function setHP(value:int):void
 		{
 			hp = value;
-			if (hp <= 0)
-			{
+			if (hp <= 0) {
 				hp = 0;
 				die();
+			} else if (hp > maxHp) {
+				hp = maxHp;
 			}
 			trace(name + "'s hp is now " + hp);
+		}
+		
+		public function setMP(value:int):void
+		{
+			mp = value;
+			if (mp <= 0) {
+				mp = 0;
+			} else if (mp > maxMp) {
+				mp = maxMp;
+			}
+			trace(name + "'s mp is now " + mp);
+		}
+		
+		public function addHP(value:int):void {
+			setHP(this.hp + value);
+		}
+		
+		public function addMP(value:int):void {
+			setMP(this.mp + value);
 		}
 		
 		public function getHP():int

@@ -26,10 +26,12 @@
 		import com.lasko.GameGraphics;
 		import com.lasko.Fonts;
 		import com.lasko.Game;
-		import com.lasko.GameInput;
+		import com.lasko.input.GameInput;
 
 		[Embed(source = "../maps/plane2.tmx", mimeType = "application/octet-stream")]
 		protected var mapPlaneClass:Class;
+		[Embed(source = "../maps/mode7.tmx", mimeType = "application/octet-stream")]
+		protected var mode7Class:Class;
 		[Embed(source="../characters.xml",mimeType="application/octet-stream")]
 		public static var charactersXMLClass:Class;
 		[Embed(source="../items.xml",mimeType="application/octet-stream")]
@@ -41,13 +43,15 @@
 			XML.prettyIndent = 0;
 			
 			GameGraphics.init();
-			com.lasko.GameInput.init(this.nativeApplication);
+			com.lasko.input.GameInput.init(this.nativeApplication);
 			Fonts.init();
 			Global.addMapXML('plane2', XML(new mapPlaneClass()));
+			Global.addMapXML('mode7', XML(new mode7Class()));
 			Global.setCharactersXML(XML(new charactersXMLClass()));
 			Global.setItemsXML(XML(new itemsXMLClass()));
 			
 			var game:Game = new Game();
+			game.scale9Grid = null;
 			this.stage.addChild(game);
 			
 			var nativeWindow:NativeWindow = stage.nativeWindow;

@@ -1,11 +1,13 @@
-package com.lasko 
+package com.lasko.input 
 {
 	import flash.ui.Keyboard;
 	import flash.display.StageScaleMode;
 	import flash.display.StageDisplayState;
 	
 	import mx.core.FlexGlobals;
-
+	
+	import com.lasko.Global;
+	import com.lasko.Game;
 	
 	public class GameInputMapScreen extends GameInput
 	{

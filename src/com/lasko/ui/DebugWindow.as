@@ -19,7 +19,7 @@ package com.lasko.ui
 	import mx.controls.scrollClasses.ScrollBar;
 	import mx.core.Window;
 	
-	import com.lasko.GameInput;
+	import com.lasko.input.GameInput;
 	
 	public class DebugWindow extends Window
 	{
@@ -100,7 +100,7 @@ package com.lasko.ui
 			var activeInputInstance:GameInput = GameInput.getActiveInstance();
 			for each(var input:GameInput in GameInput.getInstances()) {
 				var label:Label = new Label();
-				label.text = input.getId();
+				label.text = input.getLabel();
 				if(input == activeInputInstance) { label.setStyle("color", "red"); }
 				box.addChild(label);
 			}

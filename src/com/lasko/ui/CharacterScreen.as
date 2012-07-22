@@ -65,7 +65,7 @@
 
          switchBox("menu"); 
          
-         addEventListener(Event.ADDED, addKeyListener);
+         //addEventListener(Event.ADDED, addKeyListener);
          //addEventListener(FocusEvent.FOCUS_OUT, function(e:FocusEvent) { trace('lost it'); stage.focus = this; });
       }
 

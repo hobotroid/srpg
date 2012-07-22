@@ -1,5 +1,6 @@
 package com.lasko.ui 
 {
+	import com.lasko.input.GameInputScreen;
 	import flash.display.MovieClip;
 	import flash.display.Shape;
 	import flash.display.Bitmap;
@@ -16,7 +17,6 @@ package com.lasko.ui
 	import flash.geom.Point;
 	import flash.events.*;
 	import flash.utils.Timer;
-	import flash.ui.Keyboard;
    
 	import com.lasko.util.Utils;
 	import com.lasko.Global;
@@ -31,6 +31,8 @@ package com.lasko.ui
 		private var currentBox:String = "";
 
 		private var pointerTimer:Timer;
+		
+		private var input:GameInputScreen;
    
 		public function Screen(useBackground:Boolean=false)
 		{
@@ -44,8 +46,18 @@ package com.lasko.ui
 			pointerTimer = new Timer(160, 0);
 			pointerTimer.addEventListener(TimerEvent.TIMER, updatePointer);
 			pointerTimer.start();
+			
+			this.input = new GameInputScreen(this);
 
 			this.mouseEnabled = false;
+		}
+		
+		public function enable():void {
+			this.input.enable();
+		}
+		
+		public function disable():void {
+			this.input.disable();
 		}
 
 		public function addBox(options:Object):void
@@ -94,7 +106,7 @@ package com.lasko.ui
 			corners.bitmapData.colorTransform(corners.getRect(corners), ct);
 			clip.addChild(corners);
 
-			//construct object Silvia Navarro,
+			//construct object Silvia Navarro
 			boxes[options.label] = {
 				"menuItems": [],
 				"textItems": [],
@@ -240,81 +252,11 @@ package com.lasko.ui
 			Global.disableText(box.element);
 		}
 
-		public function addKeyListener(e:Event=null):void
-		{
-			if (!hasEventListener(KeyboardEvent.KEY_UP)) {
-				addEventListener(KeyboardEvent.KEY_UP, keyUpHandler, false, 0, true); 
-			}
-			stage.focus = this;
-		}
-
 		public function addMenuChangeCallback(destination:String, callback:Function):void
 		{
 			boxes[destination].changeCallback = callback;
 		}
 
-		public function removeKeyListener():void
-		{
-			removeEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
-		}
-
-		private function keyUpHandler(e:KeyboardEvent):void
-		{
-			switch(boxes[currentBox].layout) {
-				case "columns":
-					if(e.keyCode == Keyboard.UP) {
-						changeItem(-boxes[currentBox].columns);
-					} else if(e.keyCode == Keyboard.DOWN) {
-						changeItem(boxes[currentBox].columns);
-					} else if(e.keyCode == Keyboard.RIGHT) {
-						changeItem(1);
-					} else if(e.keyCode == Keyboard.LEFT) {
-						changeItem(-1);
-					}
-					break;
-				case "vertical":
-					if(e.keyCode == Keyboard.UP) {
-						changeItem(-1);
-					} else if(e.keyCode == Keyboard.DOWN) {
-						changeItem(1);
-						trace('down');
-					}
-					break;
-				case "horizontal":
-					if(e.keyCode == Keyboard.LEFT) {
-						changeItem(-1);
-					} else if(e.keyCode == Keyboard.RIGHT) {
-						changeItem(1);
-					}
-					break;
-				case "free":
-					if(e.keyCode == Keyboard.LEFT || e.keyCode == Keyboard.UP) {
-						changeItem(-1);
-					} else if(e.keyCode == Keyboard.RIGHT || e.keyCode == Keyboard.DOWN) {
-						changeItem(1);
-					}
-					break;
-				default: break;
-			}
-
-			var selectedIndex:Object = boxes[currentBox].menuItems[boxes[currentBox].selectedIndex];
-			if (e.keyCode == 88) { //X
-				if (selectedIndex) { 
-					selectedIndex.callback(selectedIndex.callbackParams);
-				} else {
-					boxes[currentBox].defaultCallback();
-				}
-			} else if(e.keyCode == 90) { //Z
-				if(selectedIndex && selectedIndex.exitCallback) {
-					selectedIndex.exitCallback(selectedIndex.exitCallbackParams);
-				} else {
-					boxes[currentBox].defaultExitCallback();
-				}
-			}
-		 
-			e.stopPropagation();
-		}
-      
 		public function changeItem(offset:int, destination:String=null):Boolean
 		{
 			if (!destination) { destination = currentBox; }
@@ -428,7 +370,11 @@ package com.lasko.ui
 		}
 
 		public function getBox(destination:String):Object {
-			return(boxes[destination]);
+			return boxes[destination];
+		}
+		
+		public function getCurrentBox():Object {
+			return getBox(currentBox);
 		}
 
 		public function getSelectedItem(destination:String):Object
@@ -439,6 +385,10 @@ package com.lasko.ui
 		public function getSelectedIndex(destination:String):int
 		{
 			return(boxes[destination].selectedIndex);
+		}
+		
+		public function getCurrentSelectedIndex():int {
+			return getSelectedIndex(currentBox);
 		}
 
 		public function updateselectedIndex(destination:String, item:Object):void

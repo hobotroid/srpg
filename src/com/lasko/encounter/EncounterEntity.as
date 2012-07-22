@@ -1,7 +1,9 @@
 package com.lasko.encounter 
 {
+	import com.lasko.ui.UIBar;
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
+	import flash.display.MovieClip;
 	import flash.display.Sprite;
 	import flash.display.DisplayObject;
 	import flash.geom.Point;
@@ -38,6 +40,8 @@ package com.lasko.encounter
 		private var type:String;
 		
 		private var originalPosition:Point;
+		private var hpBar:UIBar;
+		private var mpBar:UIBar;
 		
 		public function EncounterEntity(character:Character, type:String) 
 		{
@@ -68,7 +72,28 @@ package com.lasko.encounter
 			);
 			if (!sprite.contains(bitmap)) { sprite.addChild(bitmap); }
 		}
+		
+		public function setHpBar(bar:UIBar):void {
+			this.hpBar = bar;
+		}
 
+		public function setMpBar(bar:UIBar):void {
+			this.mpBar = bar;
+		}
+		
+		//called when character needs updating - to update its mp/hp bar, for instance
+		public function statChanged():void {
+			//HP
+			if(hpBar) {
+				hpBar.setValue(this.character.getHP());
+			}
+
+			//MP
+			if(mpBar) {
+				mpBar.setValue(this.character.getMP());
+			}
+		}
+		
 		public function die():void {
 			this.setState(EncounterEntity.STATE_DEAD);
 			this.clearAction();

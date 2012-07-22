@@ -29,6 +29,8 @@
     import com.lasko.util.*;
 	import com.lasko.entity.Character;
 	import com.lasko.encounter.Encounter;
+	import com.lasko.input.GameInputMapScreen;
+	import com.lasko.input.GameInput;
 	import com.lasko.Global;
 	import com.lasko.GameGraphics;
 	
@@ -95,7 +97,6 @@
 		
 		public function Game()
 		{
-			//stage.scaleMode = StageScaleMode.SHOW_ALL;
 			TweenPlugin.activate([TransformAroundCenterPlugin, TransformAroundPointPlugin, ShortRotationPlugin]);
 			
 			if (stage)
@@ -112,6 +113,7 @@
 			
 			//canvas to draw on
 			canvas = new BitmapData(stage.stageWidth, stage.stageHeight, false);
+			trace(canvas.width + 'x' + canvas.height);
 			canvasBitmap = new Bitmap(canvas);
 			addChild(canvasBitmap);
 			this.focusRect = false;
@@ -168,7 +170,7 @@
 		
 		private function loadMap(mapName:String):void
 		{
-			maps.push(new Map('plane2'));
+			maps.push(new Map(mapName));
 		}
 		
 		private function loadMusic():void
@@ -323,6 +325,7 @@
 		public function startEncounter(party:Party, npc:Party):void
 		{
 			stopGameTimer();
+			GameInput.stop();
 			gameState = Game.GAME_STATE_ENCOUNTER;
 			/*var encounter:Encounter = new Encounter(party, npc);
 			

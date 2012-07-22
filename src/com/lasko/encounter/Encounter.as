@@ -24,7 +24,7 @@
 	import com.lasko.entity.Character;
 	import com.lasko.Global;
 	import com.lasko.GameGraphics;
-	import com.lasko.encounter.GameInputEncounter;
+	import com.lasko.input.GameInputEncounter;
    
 	public class Encounter extends TopLevel {
 		public static const STATE_CHOOSING_TARGET:int = 0;
@@ -186,7 +186,9 @@
 				//heads.addChild(hpBar);
 				//heads.addChild(spBar);
 				headClip.addChild(hpBar);
-				headClip.addChild(spBar);				
+				headClip.addChild(spBar);	
+				member.setHpBar(hpBar);
+				member.setMpBar(spBar);
 				
 				menus.addMenuItem("party", headClip, {
 					x: 290 + HEAD_PADDING * count + HEAD_WIDTH * count + HEAD_WIDTH / 2 - headBmp.width / 2 + 5, 
@@ -238,6 +240,9 @@
 			menus.switchBox("party");
 			selectNextMember();
 			state = Encounter.STATE_CHOOSING_MEMBER;
+
+			this.menus.visible = true;
+			this.menus.enable();
 		}
 		
 		private function turnFinishedEvent(e:CustomEvent):void {
@@ -290,13 +295,19 @@
 					break;
 				}
 			}
+			
+			//EXECUTE THE TURN!!!!
 			if (actionCount == goodEntities.length) {
-				//turn = new Turn(goodEntities, badEntities);
+				this.menus.disable();
+				//menus.visible = false;
 				state = Encounter.STATE_EXECUTING_TURN;
 				this.turn.execute();
 				partySelector.visible = false;
 				return;
 			}
+			
+			input.disable();
+			menus.enable();
 		}
 
 		/************ MENU OPTIONS WHEN SELECTING A PARTY MEMBER ************/
@@ -381,8 +392,10 @@
 			goodEntities[selectedMember].setAction(action);
 			
 			menus.switchBox(null);
+			menus.disable();
 			selectFirstTarget();
-
+			input.enable();
+			
 			state = Encounter.STATE_CHOOSING_TARGET;
 		}
       

@@ -8,9 +8,9 @@
       <height>48</height>
       <type>primary</type>
       <hp>100</hp>
-      <dex>40</dex>
+      <dex>10</dex>
       <str>200</str>
-      <mp>10</mp>
+      <mp>50</mp>
       <speed>3</speed>
 	  <head_y>23</head_y>
       <frames>
@@ -55,9 +55,9 @@
 	  <width>48</width>
       <height>48</height>
       <hp>100</hp>
-      <dex>40</dex>
+      <dex>10</dex>
       <str>8</str>
-      <mp>10</mp>
+      <mp>40</mp>
       <speed>5</speed>
 	  <head_y>19</head_y>
       <frames>
