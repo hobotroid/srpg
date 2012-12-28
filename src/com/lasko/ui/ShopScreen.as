@@ -53,7 +53,7 @@
       private function exitAction(params:Object):void
       {
          Global.game.resumeGame();
-         Global.game.removeChild(this);
+         Global.main.removeChild(this);
       }
    }
 }

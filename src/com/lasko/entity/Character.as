@@ -6,25 +6,24 @@
 	import flash.geom.Point;
 	import flash.utils.Timer;
 	import flash.events.TimerEvent;
+	import net.flashpunk.graphics.Spritemap;
  
+	import net.flashpunk.Entity;
+	
 	import com.greensock.motionPaths.RectanglePath2D;
 	
+	import com.lasko.GameGraphics;
     import com.lasko.util.Utils;
     import com.lasko.entity.CharacterCombat;
-	import com.lasko.entity.Entity;
 	import com.lasko.encounter.CombatCondition;
 	import com.lasko.Global;
+	import com.lasko.map.Map;
 	
 	public class Character extends Entity
 	{
 		private var parentMap:Map;
 		public var parentParty:Party;
 		
-		public var x:int, y:int;
-        public var mapX:int, mapY:int;
-		public var width:int;
-		public var height:int;
-		public var rect:Rectangle;
 		public var head_cutoff_y:int = 0;
 
 		private var state:Object = { "type": Global.STATE_DOWNSTILL };
@@ -33,8 +32,6 @@
 		
 		private var speed:int = 5;
 		public var id:String;
-		public var name:String;
-		public var type:String;
 		public var xp:int, hp:int, mp:int, str:int, dex:int, intl:int, level:int;
 		public var maxHp:int, maxMp:int;
 		public var collisionRectIndex:int;
@@ -68,15 +65,8 @@
 		public var combat:CharacterCombat;
 		public var anim:CharacterAnimation;
 		
-		public function Character(parentMap:Map, dataXML:XMLList, x:int, y:int)
+		public function Character(dataXML:XMLList)
 		{
-			this.parentMap = parentMap;
-			this.x = x;
-			this.y = y;
-            //this.mapX = parentMap.tileWidth / this.x;
-            //this.mapY = parentMap.tileHeight / this.y;
-            this.mapX = (x + this.width * .1) / parentMap.tileWidth;
-            this.mapY = y / parentMap.tileHeight;
 			this.inventory = new Inventory(this.parentParty);
 			//frameTimer.addEventListener(TimerEvent.TIMER, changeFrameEvent);
 			
@@ -126,9 +116,8 @@
 			}
 			
 			//dimensions
-			width = dataXML.width.length() ? dataXML.width.text() : parentMap.tileWidth;
-			height = dataXML.height.length() ? dataXML.height.text() : parentMap.tileHeight;
-			rect = new Rectangle(x, y, width, height);
+			width = dataXML.width.length() ? dataXML.width.text() : parentMap.getTileWidth();
+			height = dataXML.height.length() ? dataXML.height.text() : parentMap.getTileHeight();
 			head_cutoff_y = dataXML.head_y.length() ? dataXML.head_y.text() : 24;
 			
 			//misc
@@ -140,6 +129,15 @@
 			
 			combat = new CharacterCombat(this);
 			anim = new CharacterAnimation(this, dataXML);
+			
+			//flashpunk
+			var spritemap:Spritemap = new Spritemap(GameGraphics.carlFrames, 48, 48);
+			spritemap.setFrame(0, 0);
+			spritemap.visible = true;
+			spritemap.x = 0;
+			spritemap.y = 0;
+			this.addGraphic(spritemap);
+			
 		}
 		
 		public function setParty(party:Party):void
@@ -147,206 +145,7 @@
 			this.parentParty = party;
 		}
 		
-		public function setMap(map:Map):void
-		{
-			parentMap = map;
-		}
-		
-		public function moveUp():void
-		{
-			if (!canAcceptInput) { return; }
-			canAcceptInput = false;
-			if (state.type == Global.STATE_LEFTWALK || state.type == Global.STATE_RIGHTWALK) { return; }
-			if (!canMove(Global.DIRECTION_UP)) { canAcceptInput = true; return; }
-			setState(Global.STATE_UPWALK, {target: mapY - 1 });
-		}
-		
-		public function moveDown():void
-		{
-			if (!canAcceptInput) { return; }
-			canAcceptInput = false;
-			if (state.type == Global.STATE_LEFTWALK || state.type == Global.STATE_RIGHTWALK) { return; }
-			if (!canMove(Global.DIRECTION_DOWN)) { canAcceptInput = true;  trace('COLLIDED DOWN'); return; }
-            setState(Global.STATE_DOWNWALK, { target: this.mapY + 1 } );
-		}
-		
-		public function moveLeft():void
-		{
-			if (!canAcceptInput) { return; }
-			canAcceptInput = false;
-			if (state.type == Global.STATE_DOWNWALK || state.type == Global.STATE_UPWALK) { return; }
-			if (!canMove(Global.DIRECTION_LEFT)) { canAcceptInput = true; return; }
-			setState(Global.STATE_LEFTWALK, {target: mapX - 1 });
-		}
-		
-		public function moveRight():void
-		{
-			if (!canAcceptInput) { return; }
-			canAcceptInput = false;
-			if (state.type == Global.STATE_DOWNWALK || state.type == Global.STATE_UPWALK) { return; }
-			if (!canMove(Global.DIRECTION_RIGHT)) { canAcceptInput = true; return; }
-			setState(Global.STATE_RIGHTWALK, { target: mapX + 1 });
-		}
-		
-		public function moveStop():void
-		{
-			if (state.type == Global.STATE_RIGHTWALK || state.type == Global.STATE_LEFTWALK || state.type == Global.STATE_UPWALK || state.type == Global.STATE_DOWNWALK) {
-				setState(this.state.type, { target: this.state.target, stop: true, force: true } );
-			}
-		}
-		
-		private function canMove(direction:int):Boolean {
-			switch(direction) {
-				case Global.DIRECTION_DOWN:
-					return !checkCollision(x, y + parentMap.tileHeight, direction);
-				break;
-				case Global.DIRECTION_UP:
-					return !checkCollision(x, y - parentMap.tileHeight, direction);
-				break;
-				case Global.DIRECTION_LEFT:
-					return !checkCollision(x - parentMap.tileWidth, y, direction);
-				break;
-				case Global.DIRECTION_RIGHT:
-					return !checkCollision(x + parentMap.tileWidth, y, direction);
-				break;
-				default: break;
-			}
-			return true;
-		}
-		
-		private function checkCollision(newx:int, newy:int, dir:int):Boolean
-		{
-			if (!checkCollisions)
-			{
-				return (false);
-			} //only check collisions for carl
-			
-			var mapX:int = newx / parentMap.tileWidth;
-			var mapY:int = newy / parentMap.tileHeight;
-			var x:int, y:int, l:int;
-			//var tileX:int, tileY:int;
-			var tile:Object;
-			
-			var charRect:Rectangle = new Rectangle(newx + charCollisionRect.x, newy + charCollisionRect.y, charCollisionRect.width, charCollisionRect.height); //only carl's feet
-			var collisionRect:Object
-			
-			collidingWith = null;
-			
-			//loop through collision rects, find tiles associated with them and perform collision
-			for (var i:int = 0; i < parentMap.collisionMap.length; i++)
-			{
-				collisionRect = parentMap.collisionMap[i];
 				
-				if (collisionRect && collisionRect.intersects(charRect))
-				{
-					if (parentMap.collisionMapIndexes[i])
-					{
-						if (performCollision(parentMap.collisionMapIndexes[i], dir))
-						{
-							return (true);
-						}
-					}
-					else
-					{
-						return (true);
-					}
-				}
-			}
-			
-			//if character is colliding with something, figure out what they're colliding with
-			/*for each(collisionRect in parentMap.collisionMap) {
-			   if (collisionRect && collisionRect.intersects(charRect)) {
-			
-			   for(l=0; l<parentMap.tiles.length; l++) {
-			   for(x = mapX - 2; x < mapX + 2; x++) {
-			   for (y = mapY - 2; y < mapY + 2; y++) {
-			   tile = parentMap.getTileAt(l, x, y);
-			   if(tile && tile.type == Global.TILE_TYPE_PORTAL) {
-			   parentMap.collisionMapColliding.push(collisionRect);
-			   trace(tile);
-			   //trace(collisionRect);
-			   //trace(parentMap.collisionMap[tile.collideIndex]);
-			   trace(collisionRect);
-			   trace(parentMap.collisionMap[tile.collideIndex]);
-			   }
-			   if (tile && tile.collisionType && collisionRect == parentMap.collisionMap[tile.collideIndex]) {
-			   if(performCollision(tile, dir)) { return(true); }
-			   }
-			   }
-			   }
-			   }
-			
-			
-			
-			   return(true);
-			   } else {
-			   parentMap.collisionMapColliding.splice(parentMap.collisionMapColliding.indexOf(collisionRect), 1);
-			   }
-			
-			 }*/
-			
-			return false;
-		}
-		
-		private function performCollision(tile:Object, direction:int):Boolean
-		{
-			switch (tile.collisionType)
-			{
-				case Global.COLLISION_TYPE_NORMAL: //regular collidable tile/object
-					collidingWith = tile;
-					return (true);
-				case Global.COLLISION_TYPE_PORTAL: //portal
-					if (parentMap.getTilesAbove(tile).length == 0)
-					{
-						Global.game.changeMap(tile.params.destination);
-						return (true);
-					}
-					break;
-				case Global.COLLISION_TYPE_MOVABLE: //movable object
-					var destX:int, destY:int;
-					switch (direction)
-				{
-					case Global.DIRECTION_UP : //up
-						destX = tile.x;
-						destY = tile.y - parentMap.tileHeight;
-						break;
-					case Global.DIRECTION_DOWN: //down
-						destX = tile.x;
-						destY = tile.y + parentMap.tileHeight;
-						break;
-					case Global.DIRECTION_LEFT: //left
-						destX = tile.x - parentMap.tileWidth;
-						destY = tile.y;
-						break;
-					case Global.DIRECTION_RIGHT: //right
-						destX = tile.x + parentMap.tileWidth;
-						destY = tile.y;
-						break;
-					default: 
-						break;
-				}
-					
-					if (!parentMap.isCollidableAt(destX, destY))
-					{
-						tile.startMove(destX, destY);
-					}
-					return (true);
-				case Global.COLLISION_TYPE_AIRSHIP: //airship!
-					collidingWith = tile;
-					//Global.game.startMode7();
-					return (true);
-				
-				case Global.COLLISION_TYPE_NPC: 
-					collidingWith = tile;
-					return (true);
-				
-				default: 
-					break;
-			}
-			
-			return (false);
-		}
-		
 		public function addShopItems(itemsString:String):void
 		{
 			for each (var itemId:String in itemsString.split(","))
@@ -399,7 +198,7 @@
 						
 						//update y coordinate
 						y -= speed;
-						if (y <= state.target * parentMap.tileHeight) { 
+						if (y <= state.target * parentMap.getTileHeight()) { 
 							anim.changeFrameEvent();
 							if (this.state.stop) { 
 								setState(Global.STATE_UPSTILL);
@@ -409,17 +208,14 @@
 							}
 						}
 						
-						//collision rectangle
-						if (collisionRectIndex) {
-                            parentMap.collisionMap[collisionRectIndex].y -= speed;
-                        }
+					
 						
                     break;
                     case Global.STATE_DOWNWALK:
                     
 						//update y coordinate
 						y += speed;
-						if (y >= state.target * parentMap.tileHeight) { 
+						if (y >= state.target * parentMap.getTileHeight()) { 
 							anim.changeFrameEvent();
 							if (this.state.stop) { 
 								setState(Global.STATE_DOWNSTILL);
@@ -429,17 +225,13 @@
 							}
 						}
 						
-						//collision rectangle
-						if (collisionRectIndex) {
-                            parentMap.collisionMap[collisionRectIndex].y += speed;
-                        }
 						
                     break;                    
                     case Global.STATE_LEFTWALK:
 
 						//update x coordinate
 						x -= speed;
-						if (x <= state.target * parentMap.tileWidth) { 
+						if (x <= state.target * parentMap.getTileWidth()) { 
 							anim.changeFrameEvent();
 							if (this.state.stop) { 
 								setState(Global.STATE_LEFTSTILL);
@@ -449,17 +241,14 @@
 							}
 						}
 						
-						//collision rectangle
-						if (collisionRectIndex) {
-                            parentMap.collisionMap[collisionRectIndex].x -= speed;
-                        }
+					
 						
                     break;
 					case Global.STATE_RIGHTWALK:
 
 						//update x coordinate
 						x += speed;
-						if (x >= state.target * parentMap.tileWidth) { 
+						if (x >= state.target * parentMap.getTileWidth()) { 
 							anim.changeFrameEvent();
 							if (this.state.stop) { 
 								setState(Global.STATE_RIGHTSTILL);
@@ -469,22 +258,9 @@
 							}
 						}
 						
-						//collision rectangle
-						if (collisionRectIndex) {
-                            parentMap.collisionMap[collisionRectIndex].x += speed;
-                        }
 
                     break;
-                }
-				
-				//update map coordinates
-				mapX = x / parentMap.tileWidth;
-				mapY = y / parentMap.tileHeight;
-				
-				//update character rectangle
-				rect.x = x;
-				rect.y = y;
-				
+                }			
             }
         }
         
@@ -506,7 +282,7 @@
 				var node:Object = pathNodes[currentPathNode];
 				if (x > node.x)
 				{ //right of
-					moveLeft();
+					//moveLeft();
 					if (x < node.x)
 					{
 						x = node.x;
@@ -514,7 +290,7 @@
 				}
 				else if (x < node.x)
 				{ //left of
-					moveRight();
+					//moveRight();
 					if (x > node.x)
 					{
 						x = node.x;
@@ -522,7 +298,7 @@
 				}
 				if (y > node.y)
 				{ //below
-					moveUp();
+					//moveUp();
 					if (y < node.y)
 					{
 						y = node.y;
@@ -530,7 +306,7 @@
 				}
 				else if (y < node.y)
 				{ //above
-					moveDown();
+					//moveDown();
 					if (y > node.y)
 					{
 						y = node.y;
@@ -565,57 +341,57 @@
 					case "rightwalk": 
 						if (x < state.target.x - width)
 						{
-							moveRight();
+							//moveRight();
 						}
 						if (y < state.target.y)
 						{
-							moveDown();
+							//moveDown();
 						}
 						else if (y > state.target.y)
 						{
-							moveUp();
+							//moveUp();
 						}
 						break;
 					case "leftwalk": 
 						if (x > state.target.x + state.target.width)
 						{
-							moveLeft();
+							//moveLeft();
 						}
 						if (y < state.target.y)
 						{
-							moveDown();
+							//moveDown();
 						}
 						else if (y > state.target.y)
 						{
-							moveUp();
+							//moveUp();
 						}
 						break;
 					case "downwalk": 
 						if (y < state.target.y - height)
 						{
-							moveDown();
+							//moveDown();
 						}
 						if (x < state.target.x)
 						{
-							moveRight();
+							//moveRight();
 						}
 						else if (x > state.target.x)
 						{
-							moveLeft();
+							//moveLeft();
 						}
 						break;
 					case "upwalk": 
 						if (y > state.target.y + height)
 						{
-							moveUp();
+							//moveUp();
 						}
 						if (x < state.target.x)
 						{
-							moveRight();
+							//moveRight();
 						}
 						else if (x > state.target.x)
 						{
-							moveLeft();
+							//moveLeft();
 						}
 						break;
 					default: 
@@ -645,16 +421,16 @@
 				switch (anim.animState)
 				{
 					case "rightwalk": 
-						moveRight();
+						//moveRight();
 						break;
 					case "leftwalk": 
-						moveLeft();
+						//moveLeft();
 						break;
 					case Global.STATE_DOWNWALK: 
-						moveDown();
+						//moveDown();
 						break;
 					case "upwalk": 
-						moveUp();
+						//moveUp();
 						break;
 					case 'downblink': 
 					case 'leftblink': 
@@ -807,12 +583,12 @@
 		
 		private function dosileTimerHandler(e:TimerEvent):void
 		{
-			if (!rect.intersects(Global.game.getParty().leader.rect))
-			{
-				e.target.stop();
-				dosileTimer = null;
-				isDosile = false;
-			}
+			//if (!rect.intersects(Global.game.getParty().leader.rect))
+			//{
+			//	e.target.stop();
+			//	dosileTimer = null;
+			//	isDosile = false;
+			//}
 		}
 	}
 }

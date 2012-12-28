@@ -92,7 +92,7 @@ trace('selected slot ' + s);
 		private function exitAction(params:Object=null):void
 		{
 			Global.game.resumeGame();
-			Global.game.removeChild(this);
+			Global.main.stage.removeChild(this);
 		}
 	}
 }

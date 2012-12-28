@@ -9,6 +9,7 @@ package com.lasko
 	
 	import com.lasko.Global;
 	import com.lasko.ui.UIBar;
+	import com.lasko.map.Map;
 		
 	public class GameGraphics 
 	{
@@ -18,9 +19,13 @@ package com.lasko
 		[Embed(source="../../../maps/tileset24.png")]
 		[Bindable]
 		private static var tileset24Class:Class;
+		[Embed(source="../../../assets/characters/carl.png")]
+		[Bindable]
+		private static var carlFramesClass:Class;
 		
 		public static var tileset24:BitmapData;
 		public static var tileset48:BitmapData;
+		public static var carlFrames:BitmapData;
 		
 		public static var uiBarCap:Bitmap;
 		
@@ -29,6 +34,7 @@ package com.lasko
 		public static function init():void {
 			setTilesetImage(24, new tileset24Class() as BitmapAsset);
 			setTilesetImage(48, new tileset48Class() as BitmapAsset);
+			carlFrames = (new carlFramesClass() as BitmapAsset).bitmapData;
 			
 			uiBarCap = new Bitmap(new BitmapData(24, 24, true, 0x00000000));
 			uiBarCap.bitmapData.copyPixels(GameGraphics.tileset24, new Rectangle((7 % 34) * 24, (int(7 / 34)) * 24, 24, 24), new Point(0, 0));

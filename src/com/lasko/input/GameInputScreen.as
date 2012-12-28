@@ -15,7 +15,7 @@ package com.lasko.input
 			this.screen = screen;
 		}
 		
-		protected override function keyPressed(keyCode:int):void {
+		/*protected override function keyPressed(keyCode:int):void {
 			var currentBox:Object = this.screen.getCurrentBox();
 			
 			switch(currentBox.layout) {
@@ -69,7 +69,7 @@ package com.lasko.input
 					currentBox.defaultExitCallback();
 				}
 			}
-		}
+		}*/
 	}
 
 }

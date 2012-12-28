@@ -5,7 +5,7 @@
 					   width="640" 
 					   height="480"
 					   title="SRPG"
-					   windowComplete="init();">
+					   windowComplete="windowComplete();">
 	
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
@@ -28,7 +28,7 @@
 		import com.lasko.Game;
 		import com.lasko.input.GameInput;
 
-		[Embed(source = "../maps/plane2.tmx", mimeType = "application/octet-stream")]
+		[Embed(source = "../maps/plane.oel", mimeType = "application/octet-stream")]
 		protected var mapPlaneClass:Class;
 		[Embed(source = "../maps/mode7.tmx", mimeType = "application/octet-stream")]
 		protected var mode7Class:Class;
@@ -37,21 +37,21 @@
 		[Embed(source="../items.xml",mimeType="application/octet-stream")]
 		public static var itemsXMLClass:Class;
 
-		private function init():void
+		private function windowComplete():void
 		{
 			XML.ignoreWhitespace = true;
 			XML.prettyIndent = 0;
 			
+			Global.setMain(this);
 			GameGraphics.init();
 			com.lasko.input.GameInput.init(this.nativeApplication);
 			Fonts.init();
-			Global.addMapXML('plane2', XML(new mapPlaneClass()));
+			Global.addMapXML('plane', XML(new mapPlaneClass()));
 			Global.addMapXML('mode7', XML(new mode7Class()));
 			Global.setCharactersXML(XML(new charactersXMLClass()));
 			Global.setItemsXML(XML(new itemsXMLClass()));
 			
 			var game:Game = new Game();
-			game.scale9Grid = null;
 			this.stage.addChild(game);
 			
 			var nativeWindow:NativeWindow = stage.nativeWindow;

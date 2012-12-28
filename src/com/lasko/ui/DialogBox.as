@@ -31,7 +31,7 @@
          var initialPrompt:XML = XML(conversation.prompt.(@type=="initial"));
          
          addBox({
-			x:20, y:Global.game.stage.stageHeight - 200, width:Global.game.stage.stageWidth - 40, height:125, 
+			x:20, y:Global.main.stage.stageHeight - 200, width:Global.main.stage.stageWidth - 40, height:125, 
 			label:"dialog", layout:"vertical", columns:0, color:Screen.DEFAULT_BOX_COLOR, defaultCallback:defaultChoice
 		 });
          displayPrompt({prompt: initialPrompt});

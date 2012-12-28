@@ -18,7 +18,7 @@ package com.lasko.input
 			this.menues = encounter.getMenus();
 		}
 		
-		protected override function keyPressed(keyCode:int):void {
+		/*protected override function keyPressed(keyCode:int):void {
 			switch(this.encounter.getState()) {
 				case Encounter.STATE_CHOOSING_TARGET:
 					if (keyCode == Keyboard.UP) {
@@ -41,7 +41,7 @@ package com.lasko.input
 				break;
 				default: break;
 			}
-		}
+		}*/
 	}
 
 }

@@ -63,6 +63,7 @@ package com.lasko {
 		public static const BAR_COLOR_SP = 0x7daa1b;
 
 		public static var game:Game;
+		public static var main:Main;
 		public static var currentBackground:BitmapData;
 		public static var gameWidth:int, gameHeight:int;
 		
@@ -76,8 +77,12 @@ package com.lasko {
 		public static function setGame(g:Game)
 		{
 			game = g;
-			gameWidth = g.stage.stageWidth;
-			gameHeight = g.stage.stageHeight;
+			gameWidth = 800;
+			gameHeight = 600;
+		}
+		
+		public static function setMain(m:Main) {
+			main = m;
 		}
       
 		public static function makeText(string:String, bold:Boolean=true):TextField

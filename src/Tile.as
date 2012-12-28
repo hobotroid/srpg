@@ -2,6 +2,8 @@
    import flash.display.MovieClip;	
    import flash.display.Bitmap;	
 
+   import com.lasko.map.Map;
+   
    public class Tile  {
       public var type:String;
       private var parentMap:Map;

@@ -7,6 +7,7 @@ package {
    import flash.events.TimerEvent;
    
    import com.lasko.Global;
+   import com.lasko.map.Map;
 
    public class MapObject {
       public var type:int;
@@ -74,7 +75,6 @@ trace('MapObject::useItem(), type='+type);
          switch(type) {
             case Global.TILE_TYPE_AIRSHIP:
                Global.game.stopGameTimer();
-               Global.game.startMode7(this);
                return;
             case Global.TILE_TYPE_BOX:
                var dialog:DialogBox = Global.game.startDialog(null, XML(Global.game.getCharacterXML("boxman").dialog), null, 
@@ -82,7 +82,6 @@ trace('MapObject::useItem(), type='+type);
                      var lootTokens:Array = String(params.contents).split(" ");
                      spriteNum = 58; // change to open box sprite
                      type = Global.TILE_TYPE_DEAD_BOX;
-					 Global.game.drawMap();
                      switch(lootTokens[0]) {
                         case "money":
                            var gained:int = lootTokens[1] == "random" ? Global.getRandomMoney() : lootTokens[1];

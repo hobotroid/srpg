@@ -6,6 +6,10 @@ package com.lasko.input
 	
 	import mx.core.FlexGlobals;
 	
+	import net.flashpunk.utils.Input;
+	import net.flashpunk.utils.Key;
+	import net.flashpunk.FP;
+	
 	import com.lasko.Global;
 	import com.lasko.Game;
 	
@@ -20,103 +24,77 @@ package com.lasko.input
 			this.party = Global.game.getParty();
 		}
 		
-		protected override function keyPressed(keyCode:int):void {
-			switch (keyCode)
-			{
-				case 88: //use (X key)
-					trace(this.party.leader.collidingWith);
-					if (this.party.leader.collidingWith)
-					{
-						this.party.leader.collidingWith.useItem();
-					}
-					break;
-				case 32: //space
-					
-					break;
-				case 82: //random encounter (capital R)
-					Global.game.checkRandomEncounter(true);
-					break;
-				case 80: //pause
-					Global.game.setState(Game.GAME_STATE_CHARACTER_SCREEN);
-					break;
-				case 67: //c key - toggle collision view
-					Global.game.debugShowCollision = !Global.game.debugShowCollision;
-					Global.game.debugHighlightedTiles = [];
-					break;
-				case 68: //d key - turn on debugging
-					Global.game.toggleDebugging();
-					break;
-				case 84: //t key
-					break;
-				case 48: //0
-					for each (var l:int in Global.game.maps[Global.game.activeMap].visibleLayers)
-					{
-						Global.game.maps[Global.game.activeMap].visibleLayers[l] = 1;
-					}
-					break;
-				case 49: //1
-				case 50: //2
-				case 51: //3
-				case 52: //4
-				case 53: //5
-				case 54: //6
-				case 55: //7
-				case 56: //8
-				case 57: //9
-					Global.game.maps[Global.game.activeMap].visibleLayers[keyCode - 49] = !Global.game.maps[Global.game.activeMap].visibleLayers[keyCode - 49];
-					break;
-				default: 
-					break;
+		override protected function check():void {
+			if (Input.check(Key.DOWN)) {
+				FP.camera.y++;
+			}
+			
+			if (Input.check(Key.UP)) {
+				FP.camera.y--;
+			}
+			
+			if (Input.check(Key.RIGHT)) {
+				FP.camera.x++;
+			}
+			
+			if (Input.check(Key.LEFT)) {
+				FP.camera.x--;
 			}
 		}
 		
-		public function update():void {
+		public function update2():void {
 			//if no keys pressed, make character stop 
-			if (!keysPressedCount) {
-				if (Global.game.getState() == Game.GAME_STATE_PLAYING) {
-					this.party.leader.moveStop();
-				}
-				return;
-			}
+			//if (!keysPressedCount) {
+				//if (Global.game.getState() == Main.GAME_STATE_PLAYING) {
+				//	this.party.leader.moveStop();
+				//}
+				//return;
+			//}
 			
 			//directions
-			if (keysPressed[Keyboard.UP])
+			/*if (keysPressed[Keyboard.UP])
 			{
-				Global.game.moveUp();
+				Global.game.getActiveMap().camera.y--;
+				//Global.game.moveUp();
 			}
 			else if (keysPressed[Keyboard.DOWN])
 			{
-				Global.game.moveDown();
+				//Global.game.moveDown();
+				Global.game.getActiveMap().camera.y++;
+				trace('down');
+				//Global.game.getMapRenderer().scrollDown();
 			}
 			else if (keysPressed[Keyboard.LEFT])
 			{
-				Global.game.moveLeft();
+				//Global.game.getMapRenderer().scrollLeft();
+				//Global.game.moveLeft();
 			}
 			else if (keysPressed[Keyboard.RIGHT])
 			{
-				Global.game.moveRight();
+				//Global.game.getMapRenderer().scrollRight();
+				//Global.game.moveRight();
 			}
 
 			//manual scrolling
 			if (keysPressed[Keyboard.NUMPAD_4]) {
-				Global.game.scrollLeft();
+				//Global.game.getMapRenderer().scrollLeft();
 			}
 			if (keysPressed[Keyboard.NUMPAD_6]) {
-				Global.game.scrollRight();
+				//Global.game.getMapRenderer().scrollRight();
 			}
 			if (keysPressed[Keyboard.NUMPAD_8]) {
-				Global.game.scrollUp();
+				//Global.game.getMapRenderer().scrollUp();
 			}
 			if (keysPressed[Keyboard.NUMPAD_5]) {
-				Global.game.scrollDown();
+				//Global.game.getMapRenderer().scrollDown();
 			}
 			
 			//misc
 			if (keysPressed[Keyboard.SPACE]) {
-				if (Global.game.getState() == Game.GAME_STATE_DEBUG) {
+				//if (Global.game.getState() == Main.GAME_STATE_DEBUG) {
 					//drawNextTile();
-				}
-			}
+				//}
+			}*/
 		}
 	}
 

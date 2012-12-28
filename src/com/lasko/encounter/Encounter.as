@@ -25,6 +25,7 @@
 	import com.lasko.Global;
 	import com.lasko.GameGraphics;
 	import com.lasko.input.GameInputEncounter;
+	import com.lasko.map.Map;
    
 	public class Encounter extends TopLevel {
 		public static const STATE_CHOOSING_TARGET:int = 0;
