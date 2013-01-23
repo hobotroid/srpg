@@ -30,11 +30,11 @@ package com.lasko {
 		public static const TILE_TYPE_MISC = 8;
 		public static const TILE_TYPE_TROLLY = 8;
 
-		public static const COLLISION_TYPE_NORMAL = 1;
-		public static const COLLISION_TYPE_PORTAL = 2;
-		public static const COLLISION_TYPE_MOVABLE = 3;
-		public static const COLLISION_TYPE_AIRSHIP = 4;
-		public static const COLLISION_TYPE_NPC = 5;
+		public static const COLLISION_LEVEL = 0;
+		public static const COLLISION_MAP_OBJECT_COLLIDABLE = 1;
+		public static const COLLISION_MAP_OBJECT= 2;
+		public static const COLLISION_TYPE_CHARACTER = 3;
+		public static const COLLISION_TYPE_PLAYER = 4;
 
 		public static const DIRECTION_LEFT = 1;
 		public static const DIRECTION_RIGHT = 2;
@@ -61,6 +61,11 @@ package com.lasko {
 
 		public static const BAR_COLOR_HP = 0xdc6048;
 		public static const BAR_COLOR_SP = 0x7daa1b;
+		
+		public static const WALK_SPEED = 4;
+		public static const SCROLL_SPEED = 4;
+		
+		public static const USE_DISTANCE = 10;
 
 		public static var game:Game;
 		public static var main:Main;
@@ -70,7 +75,9 @@ package com.lasko {
 		public static var charactersXML:XML;
 		public static var itemsXML:XML;
 		private static var mapXMLs = new Object();
+		
 		public static var debugWindow:DebugWindow;
+		public static var showCollisionBoxes:Boolean = false;
 		 
 		public function Global() { }
       

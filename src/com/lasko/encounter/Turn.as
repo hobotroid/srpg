@@ -117,9 +117,9 @@ package com.lasko.encounter
 				var entity:EncounterEntity = this.badEntities[i];
 				var character:Character = entity.getCharacter();
 
-				if (character.getStateName() == Global.STATE_DEAD) {
-					deadCount++;
-				}
+				//if (character.getStateName() == Global.STATE_DEAD) {
+				//	deadCount++;
+				//}
 			}
 
 			if (deadCount >= this.badEntities.length) {

@@ -1,12 +1,17 @@
 ﻿package com.lasko.entity
 {
+	import com.lasko.entity.map.GenericMapObject;
 	import flash.display.MovieClip;
 	import flash.display.BitmapData;
 	import flash.geom.Rectangle;
 	import flash.geom.Point;
 	import flash.utils.Timer;
 	import flash.events.TimerEvent;
+	import net.flashpunk.Graphic;
+	import net.flashpunk.graphics.Image;
 	import net.flashpunk.graphics.Spritemap;
+	import net.flashpunk.Mask;
+	import net.flashpunk.masks.Hitbox;
  
 	import net.flashpunk.Entity;
 	
@@ -21,6 +26,7 @@
 	
 	public class Character extends Entity
 	{
+		private var characterId:String;
 		private var parentMap:Map;
 		public var parentParty:Party;
 		
@@ -30,14 +36,12 @@
 		private var pathNodeTimer:Timer;
 		private var canAcceptInput:Boolean = true;
 		
+		private var collisionRect:Rectangle;
+		
+		//basic stats
 		private var speed:int = 5;
-		public var id:String;
 		public var xp:int, hp:int, mp:int, str:int, dex:int, intl:int, level:int;
 		public var maxHp:int, maxMp:int;
-		public var collisionRectIndex:int;
-		private var checkCollisions:Boolean = false;
-        private var charCollisionRect:Rectangle;
-		public var collidingWith:Object;
 		
 		public var conditions:Array = new Array();
 		private var spells:Array = new Array();
@@ -62,13 +66,19 @@
 		//for wandering logic
 		private var wanderParams:Object = {radius: 5, start_x: 0, start_y: 0, x: 0, y: 0, states: {}, statesSum: 0};
 		
+		private var isPlayerController:Boolean = false;
+		
 		public var combat:CharacterCombat;
 		public var anim:CharacterAnimation;
 		
+		
+		//debug
+		private var showCollisionBox:Boolean = false;
+		
 		public function Character(dataXML:XMLList)
 		{
+			super();
 			this.inventory = new Inventory(this.parentParty);
-			//frameTimer.addEventListener(TimerEvent.TIMER, changeFrameEvent);
 			
 			this.setSlot("L. Hand", new Item("Fists"));
 			
@@ -76,42 +86,39 @@
 			type = dataXML.type.text();
 			
 			//stats
+			characterId = dataXML.@id;
 			hp = maxHp = dataXML.hp.text();
 			mp = maxMp = dataXML.mp.text();
 			dex = dataXML.dex.text();
 			str = dataXML.str.text();
 			name = dataXML.full_name.text();
-			id = dataXML.@id;
 			level = dataXML.level.text();
 			speed = dataXML.speed.text();
 			xp = 0;
 			
 			//spells
-			for each (var spellsXML:XML in dataXML.spells.children())
-			{
+			for each (var spellsXML:XML in dataXML.spells.children()) {
 				spells.push(new Spell(spellsXML.@name.toXMLString()));
 			}
 			
 			//dialog?
-			if (dataXML.dialog.children().length())
-			{
+			if (dataXML.dialog.children().length()) {
 				dialog = XML(dataXML.dialog);
 			}
 			
 			//portrait?
-			if (int(dataXML.portrait.@index))
-			{
+			if (int(dataXML.portrait.@index)) {
 				portrait = dataXML.portrait;
 			}
             
             //collision rect from characters.xml
             if (dataXML.collision.children().length()) {
-                charCollisionRect = new Rectangle(dataXML.collision.x, dataXML.collision.y, dataXML.collision.width, dataXML.collision.height);
+                collisionRect = new Rectangle(dataXML.collision.x, dataXML.collision.y, dataXML.collision.width, dataXML.collision.height);
             }
+			trace(collisionRect);
 			
 			//combat conditions
-			for each (var conditionXML:XML in dataXML.conditions.children())
-			{
+			for each (var conditionXML:XML in dataXML.conditions.children()) {
 				conditions.push(new CombatCondition(conditionXML, this));
 			}
 			
@@ -120,24 +127,123 @@
 			height = dataXML.height.length() ? dataXML.height.text() : parentMap.getTileHeight();
 			head_cutoff_y = dataXML.head_y.length() ? dataXML.head_y.text() : 24;
 			
-			//misc
-			//only check collisions for carl
-			if (id == "carl" || id == "phillip lasko" || id == "townsman")
-			{
-				checkCollisions = true;
+			//player controlled (is player) ?
+			if(dataXML.@id == "carl") {
+				isPlayerController = true;
+				this.type = Global.COLLISION_TYPE_PLAYER;
+			} else {
+				this.type = Global.COLLISION_TYPE_CHARACTER;
 			}
 			
 			combat = new CharacterCombat(this);
 			anim = new CharacterAnimation(this, dataXML);
+
+			this.setHitboxTo(collisionRect);
+		}
+		
+		override public function update():void
+		{
+			this.layer = -y;
 			
-			//flashpunk
-			var spritemap:Spritemap = new Spritemap(GameGraphics.carlFrames, 48, 48);
-			spritemap.setFrame(0, 0);
-			spritemap.visible = true;
-			spritemap.x = 0;
-			spritemap.y = 0;
-			this.addGraphic(spritemap);
+			if (Global.showCollisionBoxes != this.showCollisionBox) {
+				this.showCollisionBox = Global.showCollisionBoxes;
+				
+				if(this.showCollisionBox) {
+					var bmd:BitmapData = new BitmapData(collisionRect.width, collisionRect.height, false, 0xff0000);
+					var img:Image = new Image(bmd);
+					img.x = collisionRect.x;
+					img.y = collisionRect.y;
+					this.addGraphic(img);
+				}
+			}
+			super.update();
+		}
+		
+		public function walkDown():void
+		{
+			this.anim.setAnimState("downwalk");
+			if (!this.performCollisions(x, y + Global.WALK_SPEED)) {
+				this.y += Global.WALK_SPEED;
+			}
+		}
+
+		public function walkUp():void
+		{
+			this.anim.setAnimState("upwalk");
+			if (!this.performCollisions(x, y - Global.WALK_SPEED)) {
+				this.y -= Global.WALK_SPEED;
+			}
+		}
+		
+		public function walkRight():void
+		{
+			this.anim.setAnimState("rightwalk");
+			if (!this.performCollisions(x + Global.WALK_SPEED, y)) {
+				this.x += Global.WALK_SPEED;
+			}
+		}
+		
+		public function walkLeft():void
+		{
+			this.anim.setAnimState("leftwalk");
+			if (!this.performCollisions(x - Global.WALK_SPEED, y)) {
+				this.x -= Global.WALK_SPEED;
+			}
+		}
+	
+		public function walkStop():void
+		{
+			this.anim.walkStop();
+		}
+	
+		private function performCollisions(x:int, y:int):Boolean
+		{
+			if (this.collide(Global.COLLISION_LEVEL, x, y)) {
+				return true;
+			}
+			if (this.collide(Global.COLLISION_MAP_OBJECT_COLLIDABLE, x, y)) {
+				return true;
+			}
 			
+			return false;
+		}
+		
+		private function getFrontCollisions():Array
+		{
+			var collidedObjects:Array = [];
+			var collideX:int, collideY:int;
+			
+			switch(anim.getAnimState()) {
+				case "downwalk":
+				case "downstill":
+					collideX = x;
+					collideY = y + Global.USE_DISTANCE;
+					break;
+				case "upwalk":
+				case "upstill":
+					collideX = x;
+					collideY = y - Global.USE_DISTANCE;
+					break;
+				default:
+					return [];
+			}
+			
+			if (this.collideTypes([Global.COLLISION_MAP_OBJECT, Global.COLLISION_MAP_OBJECT_COLLIDABLE], collideX, collideY)) {
+				this.collideInto(Global.COLLISION_MAP_OBJECT, collideX, collideY, collidedObjects);
+				this.collideInto(Global.COLLISION_MAP_OBJECT_COLLIDABLE, collideX, collideY, collidedObjects);
+			}
+			
+			return collidedObjects;
+		}
+		
+		public function useFront():void
+		{
+			var collidedObjects:Array = getFrontCollisions();
+			for each(var object:Object in collidedObjects) {
+				if (object is GenericMapObject) {
+					object.performCollision();
+				}
+			}
 		}
 		
 		public function setParty(party:Party):void
@@ -145,6 +251,10 @@
 			this.parentParty = party;
 		}
 		
+		public function getCharacterId():String 
+		{
+			return this.characterId;
+		}
 				
 		public function addShopItems(itemsString:String):void
 		{
@@ -163,111 +273,7 @@
 			return (shopItems);
 		}
 		
-		public function setState(type:int, params:Object = null):void
-		{
-			if (params && !params.force && 
-				(type == Global.STATE_LEFTWALK && state.type == Global.STATE_LEFTWALK || type == Global.STATE_RIGHTWALK && state.type == Global.STATE_RIGHTWALK || 
-				type == Global.STATE_UPWALK && state.type == Global.STATE_UPWALK || type == Global.STATE_DOWNWALK && state.type == Global.STATE_DOWNWALK)) { return; }
-			//not sure if this should set the state only if it's already that state or not
-            //if(this.state.type != type) { 
-                var obj:Object = {"type": type};
-                for (var param:Object in params)
-                {
-					obj[param] = params[param];
-                }
-                this.state = obj;
-                anim.setAnimState(type);
-            //}
-		}
 		
-		public function getState():Object
-		{
-			return (state);
-		}
-		
-		public function getStateName():String
-		{
-			return (state.type);
-		}
-		
-        public function tick():void
-        {
-            if (state.type) {
-                switch(Number(state.type)) {
-                    case Global.STATE_UPWALK:
-						
-						//update y coordinate
-						y -= speed;
-						if (y <= state.target * parentMap.getTileHeight()) { 
-							anim.changeFrameEvent();
-							if (this.state.stop) { 
-								setState(Global.STATE_UPSTILL);
-								canAcceptInput = true;
-							} else { 
-								setState(Global.STATE_UPWALK, { target: state.target - 1, force:true } );
-							}
-						}
-						
-					
-						
-                    break;
-                    case Global.STATE_DOWNWALK:
-                    
-						//update y coordinate
-						y += speed;
-						if (y >= state.target * parentMap.getTileHeight()) { 
-							anim.changeFrameEvent();
-							if (this.state.stop) { 
-								setState(Global.STATE_DOWNSTILL);
-								canAcceptInput = true;
-							} else { 
-								setState(Global.STATE_DOWNWALK, { target: state.target + 1, force:true } );
-							}
-						}
-						
-						
-                    break;                    
-                    case Global.STATE_LEFTWALK:
-
-						//update x coordinate
-						x -= speed;
-						if (x <= state.target * parentMap.getTileWidth()) { 
-							anim.changeFrameEvent();
-							if (this.state.stop) { 
-								setState(Global.STATE_LEFTSTILL);
-								canAcceptInput = true;
-							} else { 
-								setState(Global.STATE_LEFTWALK, { target: state.target - 1, force:true } );
-							}
-						}
-						
-					
-						
-                    break;
-					case Global.STATE_RIGHTWALK:
-
-						//update x coordinate
-						x += speed;
-						if (x >= state.target * parentMap.getTileWidth()) { 
-							anim.changeFrameEvent();
-							if (this.state.stop) { 
-								setState(Global.STATE_RIGHTSTILL);
-								canAcceptInput = true;
-							} else { 
-								setState(Global.STATE_RIGHTWALK, { target: state.target + 1, force:true } );
-							}
-						}
-						
-
-                    break;
-                }			
-            }
-        }
-        
-		public function updateFrame():void
-		{
-		
-		}
 		
 		public function updatePosition():void
 		{
@@ -323,7 +329,7 @@
 					//if node has delay, set up timer
 					if (node.delay)
 					{
-						anim.setDefaultAnimState();
+						anim.walkStop();
 						pathNodeTimer = new Timer(node.delay, 1);
 						pathNodeTimer.addEventListener(TimerEvent.TIMER, function(e:TimerEvent):void
 							{
@@ -395,7 +401,7 @@
 						}
 						break;
 					default: 
-						anim.setDefaultAnimState();
+						anim.walkStop();
 						break;
 				}
 			}
@@ -411,14 +417,14 @@
 						if (sum >= rand)
 						{
 							trace('setting to ' + s);
-							anim.setAnimState(Number(s));
+							//anim.setAnimState(Number(s));
 							break;
 						}
 					}
 					
 				}
 				
-				switch (anim.animState)
+				switch (anim.getAnimState())
 				{
 					case "rightwalk": 
 						//moveRight();
@@ -461,7 +467,7 @@
 						wanderParams.statesSum += num;
 					}
 					
-					setState(Global.STATE_WANDERING);
+					//setState(Global.STATE_WANDERING);
 					break;
 			}
 		}
@@ -519,7 +525,7 @@
 		private function die():void
 		{
 			anim.setAnimState(Global.STATE_DEAD);
-			setState(Global.STATE_DEAD);
+			//setState(Global.STATE_DEAD);
 		}
 		
 		public function setHP(value:int):void

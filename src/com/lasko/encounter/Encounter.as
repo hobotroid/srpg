@@ -22,6 +22,7 @@
 	import com.lasko.ui.Screen;
 	import com.lasko.util.Utils;
 	import com.lasko.entity.Character;
+	import com.lasko.entity.Party;
 	import com.lasko.Global;
 	import com.lasko.GameGraphics;
 	import com.lasko.input.GameInputEncounter;
@@ -162,7 +163,8 @@
 				
 				//faces
 				var headBmp:Bitmap = new Bitmap(new BitmapData(char.width, char.height));
-				var currentFrame:int = char.anim.getCurrentFrame();
+				//var currentFrame:int = char.anim.getCurrentFrame();
+				var currentFrame:int = 1;
 				headBmp.bitmapData.copyPixels(
 					GameGraphics.tileset48, new Rectangle((currentFrame % 17) * 48, (int(currentFrame / 17)) * 48, char.width, char.height), new Point(0, 0)
 				);

@@ -12,6 +12,7 @@ package com.lasko.input
 	
 	import com.lasko.Global;
 	import com.lasko.Game;
+	import com.lasko.entity.Party;
 	
 	public class GameInputMapScreen extends GameInput
 	{
@@ -25,76 +26,31 @@ package com.lasko.input
 		}
 		
 		override protected function check():void {
+			if (Input.released(Key.X)) {
+				Global.game.getParty().getLeader().useFront();
+			}
+			
 			if (Input.check(Key.DOWN)) {
-				FP.camera.y++;
+				Global.game.getParty().getLeader().walkDown();
+				return;
 			}
 			
 			if (Input.check(Key.UP)) {
-				FP.camera.y--;
+				Global.game.getParty().getLeader().walkUp();
+				return;
 			}
 			
 			if (Input.check(Key.RIGHT)) {
-				FP.camera.x++;
+				Global.game.getParty().getLeader().walkRight();
+				return;
 			}
 			
 			if (Input.check(Key.LEFT)) {
-				FP.camera.x--;
-			}
-		}
-		
-		public function update2():void {
-			//if no keys pressed, make character stop 
-			//if (!keysPressedCount) {
-				//if (Global.game.getState() == Main.GAME_STATE_PLAYING) {
-				//	this.party.leader.moveStop();
-				//}
-				//return;
-			//}
-			
-			//directions
-			/*if (keysPressed[Keyboard.UP])
-			{
-				Global.game.getActiveMap().camera.y--;
-				//Global.game.moveUp();
-			}
-			else if (keysPressed[Keyboard.DOWN])
-			{
-				//Global.game.moveDown();
-				Global.game.getActiveMap().camera.y++;
-				trace('down');
-				//Global.game.getMapRenderer().scrollDown();
-			}
-			else if (keysPressed[Keyboard.LEFT])
-			{
-				//Global.game.getMapRenderer().scrollLeft();
-				//Global.game.moveLeft();
-			}
-			else if (keysPressed[Keyboard.RIGHT])
-			{
-				//Global.game.getMapRenderer().scrollRight();
-				//Global.game.moveRight();
-			}
-
-			//manual scrolling
-			if (keysPressed[Keyboard.NUMPAD_4]) {
-				//Global.game.getMapRenderer().scrollLeft();
-			}
-			if (keysPressed[Keyboard.NUMPAD_6]) {
-				//Global.game.getMapRenderer().scrollRight();
-			}
-			if (keysPressed[Keyboard.NUMPAD_8]) {
-				//Global.game.getMapRenderer().scrollUp();
-			}
-			if (keysPressed[Keyboard.NUMPAD_5]) {
-				//Global.game.getMapRenderer().scrollDown();
+				Global.game.getParty().getLeader().walkLeft();
+				return;
 			}
 			
-			//misc
-			if (keysPressed[Keyboard.SPACE]) {
-				//if (Global.game.getState() == Main.GAME_STATE_DEBUG) {
-					//drawNextTile();
-				//}
-			}*/
+			Global.game.getParty().getLeader().walkStop();
 		}
 	}
 

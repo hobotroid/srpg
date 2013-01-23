@@ -1,6 +1,5 @@
 ﻿package com.lasko
 {
-	import com.lasko.map.MapRenderer;
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
     import flash.display.Loader;
@@ -32,6 +31,7 @@
 	import com.lasko.ui.*;
     import com.lasko.util.*;
 	import com.lasko.entity.Character;
+	import com.lasko.entity.Party;
 	import com.lasko.encounter.Encounter;
 	import com.lasko.input.GameInputMapScreen;
 	import com.lasko.input.GameInput;
@@ -47,30 +47,17 @@
 		public static const GAME_STATE_START_ENCOUNTER:int = 3;
 		public static const GAME_STATE_ENCOUNTER:int = 4;
 		public static const GAME_STATE_CHARACTER_SCREEN:int = 5;
-		public static const GAME_STATE_DEBUG:int = 6;
 		public static const GAME_STATE_MODE7:int = 7;
 		
 		public var maps:Array = new Array();
-		private var mapRenderer:MapRenderer;
 		public var activeMap:int;
 		public var pointer:Array = new Array();
 		public var corner:Bitmap = new Bitmap();
-		private var tempCanvas:BitmapData;
-		private var canvasBitmap:Bitmap;
-
+		
 		private var input:GameInputMapScreen;
 
 		private var party:Party = new Party("party");
 		private var leader:int;
-		
-		//sounds
-		private var music:Sound;
-		
-		//debug
-		public var debugShowCollision:Boolean = false;
-		private var debugParams:Object = { };
-		public var debugHighlightedTiles:Array = [];
-		private var drawLayer:int = 0;
 		
 		//dialog box for conversations
 		private var dialogBox:DialogBox;
@@ -87,7 +74,9 @@
 		{
 			super(800, 600, 30, true);
 			activeMap = 0;
-			FP.world = new Map("plane");
+			maps.push(new Map("plane"));
+			initParty();
+			FP.world = maps[activeMap];
 		}
 		
 		override public function init():void
@@ -95,13 +84,6 @@
 			Global.setGame(this);
 			//this.mouseEnabled = false;
 			TweenPlugin.activate([TransformAroundCenterPlugin, TransformAroundPointPlugin, ShortRotationPlugin]);		
-
-			//canvas to draw on
-			//canvas = new BitmapData(Global.main.s.width, this.height, false);
-			//trace(canvas.width + 'x' + canvas.height);
-			//canvasBitmap = new Bitmap(canvas);
-			//addChild(canvasBitmap);
-			//this.focusRect = false;
 			
 			//pointer
 			pointer[0] = new Bitmap(new BitmapData(48,48, true));
@@ -116,20 +98,46 @@
 			corner = new Bitmap(new BitmapData(24, 24, true));
 			corner.bitmapData.copyPixels(GameGraphics.tileset24, new Rectangle((6 % 34) * 24, (int(6 / 34)) * 24, 24, 24), new Point(0, 0));
 			
-			initParty();
-			
 			this.input = new GameInputMapScreen();
 			FP.world.add(input);
-			//stage.addChild(this.input);
-			//loadMusic();
-			
-			//mapRenderer = new MapRenderer(this.maps[activeMap], this.canvas);
-			//mapRenderer.render();
-			
+						
 			//temporary - start encounter immediately
 			//checkRandomEncounter(true);
         }
-
+		
+		private function initParty():void
+		{
+			var carlXML:XMLList = (Global.charactersXML.character.(@id == "carl"));
+			var carl:Character = new Character(carlXML);
+			var philXML:XMLList = (Global.charactersXML.character.(@id == "phillip lasko"));
+			//var phil:Character = new Character(philXML);
+			
+			var townsmanXML:XMLList = (Global.charactersXML.character.(@id == "townsman"));
+			//var townsman:Character = new Character(townsmanXML);
+			
+			//phil.setState(Global.STATE_FOLLOWING, {"target": carl});
+			//townsman.setState(Global.STATE_FOLLOWING, {"target": phil});
+			
+			party.inventory.addItem(new Item("Bomb"));
+			party.inventory.addItem(new Item("Nunchucks"));
+			carl.setSlot("L. Hand", new Item("Nunchucks"));
+			//phil.setSlot("L. Hand", new Item("Pistol"));
+			
+			party.addCharacter(carl);
+			//party.addCharacter(phil);
+			//party.addCharacter(townsman);
+			
+			maps[activeMap].addParty(party);
+			carl.moveTo(maps[activeMap].getPlayerStart().x, maps[activeMap].getPlayerStart().y);
+			maps[activeMap].cam.adjustToCharacter(maps[activeMap].pixelWidth, maps[activeMap].pixelHeight, carl);
+		}
+		
+		override public function update():void
+		{
+			maps[activeMap].cam.followCharacter(maps[activeMap].pixelWidth, maps[activeMap].pixelHeight, party.getLeader());
+			super.update();
+		}
+		
 		public function changeMap(mapName:String):void
 		{
 			var map:Map = new Map(mapName);
@@ -141,36 +149,7 @@
 		{
 			maps.push(new Map(mapName));
 		}
-        
-		private function initParty():void
-		{
-			var carlXML:XMLList = (Global.charactersXML.character.(@id == "carl"));
-			var carl:Character = new Character(carlXML);
-			var philXML:XMLList = (Global.charactersXML.character.(@id == "phillip lasko"));
-			var phil:Character = new Character(philXML);
-			
-			var townsmanXML:XMLList = (Global.charactersXML.character.(@id == "townsman"));
-			var townsman:Character = new Character(townsmanXML);
-			
-			phil.setState(Global.STATE_FOLLOWING, {"target": carl});
-			townsman.setState(Global.STATE_FOLLOWING, {"target": phil});
-			
-			party.inventory.addItem(new Item("Bomb"));
-			party.inventory.addItem(new Item("Nunchucks"));
-			carl.setSlot("L. Hand", new Item("Nunchucks"));
-			phil.setSlot("L. Hand", new Item("Pistol"));
-			
-			party.addCharacter(carl);
-			//party.addCharacter(phil);
-			//party.addCharacter(townsman);
-			
-			FP.world.add(carl);    
-		}	
-		
-		override public function update():void {
-			input.update()
-		}
-        
+		        
 		public function startEncounter(party:Party, npc:Party):void
 		{
 			
@@ -274,45 +253,6 @@
 		
 		public function getParty():Party {
 			return this.party;
-		}
-		
-		public function moveUp():void {
-			checkRandomEncounter();
-			//party.leader.moveUp();
-		}
-		
-		public function moveDown():void {
-			checkRandomEncounter();
-			//party.leader.moveDown();
-		}
-		
-		public function moveLeft():void {
-			checkRandomEncounter();
-			//party.leader.moveLeft();
-		}
-		
-		public function moveRight():void {
-			checkRandomEncounter();
-			//party.leader.moveRight();
-		}
-			
-		public function toggleDebugging():void {
-		/*	if (gameState == Main.GAME_STATE_PLAYING)
-			{
-				gameState = Main.GAME_STATE_DEBUG;
-				canvas.fillRect(canvas.rect, 0x000000);
-				debugParams.drawParams = null;
-			}
-			else
-			{
-				gameState = Main.GAME_STATE_PLAYING;
-			}*/
-		}
-		
-		public function debugAddHighlightedTile(x:int, y:int):void {
-			trace('adding highlight as ' + x + 'x' + y);
-			if (!debugShowCollision || debugHighlightedTiles.length > 10) { return; }
-			debugHighlightedTiles.push(new Rectangle(x, y, maps[activeMap].tileWidth, maps[activeMap].tileHeight));
 		}
 	}
 }

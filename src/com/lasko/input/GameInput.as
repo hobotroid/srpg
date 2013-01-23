@@ -29,6 +29,8 @@ package com.lasko.input
 			GameInput.activeInstance = GameInput.instances.length - 1;
 			this.label = label;
 			this.index = GameInput.instances.length - 1;
+			
+			super();
 		}
 		
 		public function getIndex():int {
@@ -62,8 +64,8 @@ package com.lasko.input
 			if(GameInput.getActiveInstance() == this) {
 				this.check();
 			}
-			/*
-			if(event.keyCode == 70) { //fullscreen - f key
+			
+			if(Input.released(Key.F)) { //fullscreen toggle
 				//this.width = flash.system.Capabilities.screenResolutionX;
 				//this.height = flash.system.Capabilities.screenResolutionY;
 				//this.stage.align = flash.display.StageAlign.TOP_LEFT;
@@ -79,7 +81,13 @@ package com.lasko.input
 				} else {
 					FlexGlobals.topLevelApplication.stage.displayState = StageDisplayState.NORMAL;
 				}
-			}*/
+			}
+			
+			if (Input.released(Key.C)) {
+				Global.showCollisionBoxes = !Global.showCollisionBoxes;
+			}
+
+			super.update();
 		}
 		
 		//override these

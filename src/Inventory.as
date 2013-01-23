@@ -1,5 +1,7 @@
 package  
 {
+	import com.lasko.entity.Party;
+	
    public class Inventory
    {
       private var items:Object = new Object();

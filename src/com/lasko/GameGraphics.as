@@ -4,6 +4,9 @@ package com.lasko
 	import flash.display.Bitmap;
 	import flash.geom.Rectangle;
 	import flash.geom.Point;
+	import net.flashpunk.Graphic;
+	import net.flashpunk.graphics.Image;
+	import net.flashpunk.graphics.Spritemap;
 	
 	import mx.core.BitmapAsset;
 	
@@ -26,6 +29,7 @@ package com.lasko
 		public static var tileset24:BitmapData;
 		public static var tileset48:BitmapData;
 		public static var carlFrames:BitmapData;
+		public static var spritemap48:Spritemap;
 		
 		public static var uiBarCap:Bitmap;
 		
@@ -35,6 +39,7 @@ package com.lasko
 			setTilesetImage(24, new tileset24Class() as BitmapAsset);
 			setTilesetImage(48, new tileset48Class() as BitmapAsset);
 			carlFrames = (new carlFramesClass() as BitmapAsset).bitmapData;
+			spritemap48 = new Spritemap(tileset48, 48, 48);
 			
 			uiBarCap = new Bitmap(new BitmapData(24, 24, true, 0x00000000));
 			uiBarCap.bitmapData.copyPixels(GameGraphics.tileset24, new Rectangle((7 % 34) * 24, (int(7 / 34)) * 24, 24, 24), new Point(0, 0));
@@ -50,7 +55,6 @@ package com.lasko
       
 		public static function makeSprite(index:int):Bitmap
 		{
-			var map:Map = Global.game.getActiveMap();
 			var bitmap:Bitmap = new Bitmap(new BitmapData(48, 48));
 			bitmap.bitmapData.copyPixels(
 				GameGraphics.tileset48, 
@@ -59,6 +63,20 @@ package com.lasko
 			);
 
 			return(bitmap);
+		}
+		
+		public static function makeImage(index:int):Image
+		{
+			var row:int = Math.floor(index / 17);
+			var column:int = index % 17;
+			var bmd:BitmapData = new BitmapData(48, 48, true, 0x00000000);
+			
+			spritemap48.setFrame(column, row);
+			spritemap48.render(bmd, new Point(0, 0), new Point(0, 0));
+
+			var image:Image = new Image(bmd);
+			
+			return image;
 		}
 	}
 

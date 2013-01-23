@@ -48,14 +48,14 @@ package com.lasko.encounter
 			for each(var targetEntity:EncounterEntity in targets) { 
 				targetEntity.showCombatHit(function():void {
 					if (hitsFinished++ >= targets.length - 1) {
-						if (targetEntity.getCharacter().getStateName() == Global.STATE_DEAD && targetEntity.getState() != EncounterEntity.STATE_DEAD) {
+						/*if (targetEntity.getCharacter().getStateName() == Global.STATE_DEAD && targetEntity.getState() != EncounterEntity.STATE_DEAD) {
 							targetEntity.die();
 							targetEntity.doEnemyDeathAnimation(function():void {
 								sourceEntity.returnToPosition(callback);
 							});
 						} else {							
 							sourceEntity.returnToPosition(callback);
-						}
+						}*/
 					}
 				});
 			}

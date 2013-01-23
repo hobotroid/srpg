@@ -10,6 +10,7 @@
    import com.lasko.util.Utils;
    import com.lasko.Global;
    import com.lasko.Game;
+   import com.lasko.entity.Party;
 
    public class DialogBox extends Screen {
       private var options:Array = new Array();
@@ -90,7 +91,7 @@ trace(actionType);
                options[selectedOption].callback();
             }
          } else {
-            npc.leader.setDosile();
+            npc.getLeader().setDosile();
             Game(parent).endDialog();
          }
       }
@@ -111,7 +112,7 @@ trace(conversation.prompt.(@id == promptId));
                displayPrompt( {prompt: conversation.prompt.(@id == promptId)} );
                break;
             default:
-               if (npc) { npc.leader.setDosile(); }
+               if (npc) { npc.getLeader().setDosile(); }
                if (endCallback != null) { 
                   endCallback();
                } else {

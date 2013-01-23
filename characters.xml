@@ -14,38 +14,36 @@
       <speed>3</speed>
 	  <head_y>23</head_y>
       <frames>
-         <frame index="42" label="downstill" default="downstill" />
-         <frame index="40" label="downwalk" default="downstill" />
-         <frame index="42" label="downwalk" default="downstill" />
-         <frame index="41" label="downwalk" default="downstill" />
-         <frame index="42" label="downwalk" default="downstill" />
-         <frame index="45" label="upstill" default="upstill" />
-         <frame index="43" label="upwalk" default="upstill" />
-         <frame index="45" label="upwalk" default="upstill" />
-         <frame index="44" label="upwalk" default="upstill" />
-         <frame index="45" label="upwalk" default="upstill" />
-         <frame index="37" label="rightstill" default="rightstill" />
-         <frame index="38" label="rightwalk" default="rightstill" />
-         <frame index="37" label="rightwalk" default="rightstill" />
-         <frame index="39" label="rightwalk" default="rightstill" />
-         <frame index="37" label="rightwalk" default="rightstill" />
-         <frame index="34" label="leftstill" default="leftstill" />
-         <frame index="35" label="leftwalk" default="leftstill" />                    
-         <frame index="34" label="leftwalk" default="leftstill" />
-         <frame index="36" label="leftwalk" default="leftstill" />
-         <frame index="34" label="leftwalk" default="leftstill" />
-         <frame index="34" label="combat" default="combat" />
-         <frame index="85" label="dead" default="dead" />
+         <frame index="8" label="downstill" default="downstill" />
+         <frame index="6" label="downwalk" default="downstill" />
+         <frame index="7" label="downwalk" default="downstill" />
+         <frame index="8" label="downwalk" default="downstill" />
+         <frame index="11" label="upstill" default="upstill" />
+         <frame index="9" label="upwalk" default="upstill" />
+         <frame index="10" label="upwalk" default="upstill" />
+         <frame index="11" label="upwalk" default="upstill" />
+         <frame index="3" label="rightstill" default="rightstill" />
+         <frame index="4" label="rightwalk" default="rightstill" />
+         <frame index="5" label="rightwalk" default="rightstill" />
+         <frame index="3" label="rightwalk" default="rightstill" />
+         <frame index="0" label="leftstill" default="leftstill" />
+         <frame index="1" label="leftwalk" default="leftstill" />
+         <frame index="2" label="leftwalk" default="leftstill" />
+         <frame index="0" label="leftwalk" default="leftstill" />
+         
+         <frame index="8" label="standard" default="downstill" />
+         <frame index="0" label="combat" default="combat" />
+         <frame index="11" label="dead" default="dead" />
       </frames>
       <spells>
          <spell name="Millions and Millions!" />
          <spell name="Full Heal" />
       </spells>
       <collision>
-         <x>15</x>
-         <y>45</y>
-         <width>16</width>
-         <height>3</height>
+         <x>13</x>
+         <y>40</y>
+         <width>22</width>
+         <height>7</height>
       </collision>
    </character>
    <character id="phillip lasko">
@@ -115,10 +113,6 @@
          <frame index="381" label="leftwalk" default="leftstill" />
          <frame index="382" label="leftwalk" default="leftstill" />
          <frame index="385" label="leftwalk" default="leftstill" />
-         
-         <frame index="387" label="leftblink" replace="leftstill" speed="2" />
-         <frame index="388" label="rightblink" replace="rightstill" speed="2" />
-         <frame index="386" label="downblink" replace="downstill" speed="2" />
          
          <frame index="376" label="standard" default="downstill" />
          <frame index="385" label="combat" default="combat" />

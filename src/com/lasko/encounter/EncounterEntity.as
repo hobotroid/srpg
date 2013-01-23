@@ -21,8 +21,8 @@ package com.lasko.encounter
 	
 	public class EncounterEntity 
 	{
-		public static const STATE_WAITING:String = "waiting";
 		public static const STATE_DEAD:String = "dead";
+		public static const STATE_WAITING:String = "waiting";
 		public static const STATE_ATTACKING:String = "attacking";
 		public static const TYPE_GOOD:String = "good";
 		public static const TYPE_BAD:String = "bad";
@@ -46,7 +46,7 @@ package com.lasko.encounter
 		public function EncounterEntity(character:Character, type:String) 
 		{
 			character.anim.setAnimState(Global.STATE_COMBAT);
-			character.setState(Global.STATE_COMBAT);
+			//character.setState(Global.STATE_COMBAT);
 			this.character = character;
 			this.bitmap = new Bitmap(new BitmapData(character.width, character.height));
 			this.sprite = new Sprite();
@@ -64,7 +64,8 @@ package com.lasko.encounter
 		{
 			if (this.state == STATE_DEAD) { return; }
 
-			var currentFrame:int = character.anim.getCurrentFrame();
+			//var currentFrame:int = character.anim.getCurrentFrame();
+			var currentFrame:int = 1;
 			bitmap.bitmapData.copyPixels(
 				GameGraphics.tileset48, 
 				new Rectangle((currentFrame % 17) * 48, (int(currentFrame/17)) * 48, bitmap.width, bitmap.height),

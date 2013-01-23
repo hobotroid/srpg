@@ -28,7 +28,7 @@
 		import com.lasko.Game;
 		import com.lasko.input.GameInput;
 
-		[Embed(source = "../maps/plane.oel", mimeType = "application/octet-stream")]
+		[Embed(source = "../maps/plane2.tmx", mimeType = "application/octet-stream")]
 		protected var mapPlaneClass:Class;
 		[Embed(source = "../maps/mode7.tmx", mimeType = "application/octet-stream")]
 		protected var mode7Class:Class;
